@@ -43,6 +43,20 @@
                     const li = document.createElement('li')
                     li.innerText = `id:${data.id} channel:${data.channel}`
                     li.id = data.id
+                    li.onclick = async () => {
+                        console.log('点击设备', data.id)
+                        // 清理所有选中状态
+                        clients.forEach(client => {
+                            const li = document.getElementById(client.id)
+                            if (data.id === client.id) {
+                                li.style.backgroundColor = 'red'
+                                console.log('设置选中状态', data.id)
+                                return
+                            }
+                            li.style.backgroundColor = 'transparent'
+                            console.log('清理选中状态', client.id)
+                        })
+                    }
                     ul.appendChild(li)
                     return
                 }
