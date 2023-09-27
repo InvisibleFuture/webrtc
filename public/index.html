@@ -14,12 +14,13 @@
     <script type="module">
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {
+            const ul = document.createElement('ul')
+            document.body.appendChild(ul)
             const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
             const host = window.location.host
             const ws = new WebSocket(`${protocol}://${host}/webrtc/music`)
             const pc = new RTCPeerConnection()
             const clients = []
-
             // 监听 ICE 候选事件
             pc.onicecandidate = event => {
                 if (event.candidate) {
@@ -39,6 +40,10 @@
                 if (data.type === 'push') {
                     console.log('收到 type:push 将设备增加', data.id)
                     clients.push({ id: data.id, channel: data.channel })
+                    const li = document.createElement('li')
+                    li.innerText = `id:${data.id} channel:${data.channel}`
+                    li.id = data.id
+                    ul.appendChild(li)
                     return
                 }
                 if (data.type === 'pull') {
@@ -46,6 +51,8 @@
                     const index = clients.findIndex(client => client.id === data.id)
                     if (index !== -1) {
                         clients.splice(index, 1)
+                        const li = document.getElementById(data.id)
+                        li.remove()
                     }
                     return
                 }
