@@ -15,7 +15,6 @@ export default class IndexedDB {
     }
 
     open() {
-        console.log('open')
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(this.databaseName, this.databaseVersion)
             request.onerror = (event) => {

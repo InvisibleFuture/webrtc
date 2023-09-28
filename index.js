@@ -31,10 +31,10 @@ app.ws('/webrtc/:channel', (ws, req) => {
     // 设备发送信令时转发给指定在线设备
     ws.on('message', message => {
         console.log(ws.id, '设备发送信令:', ws.channel, wsInstance.getWss().clients.size)
-        const { id } = JSON.parse(message)
+        const data = JSON.parse(message)
         wsInstance.getWss().clients.forEach(client => {
-            if (client !== ws && client.readyState === 1 && client.channel === ws.channel && client.id === id) {
-                client.send(message)
+            if (client !== ws && client.readyState === 1 && client.channel === ws.channel && client.id === data.id) {
+                client.send(JSON.stringify({ ...data, id: ws.id }))
             }
         })
     })
@@ -43,7 +43,7 @@ app.ws('/webrtc/:channel', (ws, req) => {
     wsInstance.getWss().clients.forEach(client => {
         if (client !== ws && client.readyState === 1 && client.channel === ws.channel) {
             client.send(JSON.stringify({ type: 'push', id: ws.id, channel: ws.channel }))
-            ws.send(JSON.stringify({ type: 'push', id: client.id, channel: client.channel }))
+            ws.send(JSON.stringify({ type: 'list', id: client.id, channel: client.channel }))
         }
     })
 })

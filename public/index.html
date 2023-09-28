@@ -9,24 +9,64 @@
 <body>
     <div>
         <h1>webRTC</h1>
-        <p>message</p>
+        <p>选择音乐使频道内所有设备同步播放</p>
     </div>
     <script type="module">
         import IndexedDB from './database.js'
         import MusicList from './music.js'
-        const musicObjectStore = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
-        await musicObjectStore.open()
-
-        // 音乐列表
+        import ClientList from './client.js'
+        
+        // 初始化音乐列表
         const musicList = new MusicList()
-        console.log('musicList:', musicList)
-        //musicList.on('add', async item => {
-        //    console.log('musicList add:', item)
-        //    const { name, size, type, lastModified, lastModifiedDate, arrayBuffer } = item
-        //    const id = Date.now()
-        //    // 存储到 IndexDB
-        //    await musicObjectStore.add({ id, name, size, type, lastModified, lastModifiedDate, arrayBuffer })
-        //})
+
+        // 初始化客户端列表
+        const clientList = new ClientList()
+
+        //// 初始化音乐频道
+        //const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+        //const host = window.location.host
+        //const ws = new WebSocket(`${protocol}://${host}/webrtc/music`)
+        //ws.onopen = function () {
+        //    console.log('music ws open')
+        //}
+        //ws.onmessage = function (event) {
+        //    const data = JSON.parse(event.data)
+        //    console.log('ws message:', data)
+        //    if (data.type === 'push') {
+        //        console.log('收到 type:push 将设备增加', data.id)
+        //        clientList.add(data.id, data.channel)
+        //        return
+        //    }
+        //    if (data.type === 'pull') {
+        //        console.log('收到 type:pull 将设备删除', data.id)
+        //        clientList.remove(data)
+        //        return
+        //    }
+        //    if (data.type === 'error') {
+        //        console.log('收到 type:error 没什么可操作的', data.id)
+        //        return
+        //    }
+        //    if (data.offer) {
+        //        console.log('收到 offer 并将其设置为远程描述')
+        //        //clientList.setRemoteDescription(data)
+        //        pc.setRemoteDescription(new RTCSessionDescription(data.offer))
+        //        // 创建SDP answer并将其设置为本地描述, 发送给远程端
+        //        pc.createAnswer().then(function (answer) {
+        //            pc.setLocalDescription(answer);
+        //            ws.send(JSON.stringify({ answer }))
+        //        })
+        //        return
+        //    }
+        //    if (data.answer) {
+        //        console.log('收到 answer 并将其设置为远程描述')
+        //        pc.setRemoteDescription(new RTCSessionDescription(data.answer))
+        //        return
+        //    }
+        //    if (data.candidate) {
+        //        console.log('收到 candidate 并将其添加到远程端')
+        //        pc.addIceCandidate(new RTCIceCandidate(data.candidate))
+        //    }
+        //}
 
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {
@@ -71,7 +111,6 @@
                 audioSource?.stop()
                 audioSource = null
             })
-
             // 监听 ICE 候选事件
             pc.onicecandidate = event => {
                 if (event.candidate) {
@@ -130,7 +169,7 @@
                     console.log('收到 offer 并将其设置为远程描述', data.offer)
                     await pc.setRemoteDescription(new RTCSessionDescription(data.offer)) // 设置远程描述为 offer
                     await pc.setLocalDescription(await pc.createAnswer())                // 设置本地描述为 answer
-                    ws.send(JSON.stringify({ id, answer: pc.localDescription }))             // 发送给远程终端 answer
+                    ws.send(JSON.stringify({ id, answer: pc.localDescription }))         // 发送给远程终端 answer
                     return
                 }
                 if (data.answer) {
@@ -144,55 +183,8 @@
                     return
                 }
             }
-            // 从数据库读取音乐文件
-            musicObjectStore.getAll().then(data => {
-                console.log('从数据库读取音乐文件', data)
-                const ol = document.createElement('ol')
-                data.forEach(item => {
-                    const li = document.createElement('li')
-                    li.innerText = `${item.name} - ${item.size} - ${item.type} - ${item.id}`
-                    const start = document.createElement('button')
-                    start.innerText = '播放'
-                    start.onclick = async () => {
-                        console.log('播放音乐', item)
-                        // 传输音乐文件
-                        const arrayBuffer = item.arrayBuffer
-                        const audioContext = new AudioContext()
-                        audioContext.decodeAudioData(arrayBuffer, async audioBuffer => {
-                            // 将音乐流添加到 RTCPeerConnection
-                            const mediaStreamDestination = audioContext.createMediaStreamDestination()
-                            mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
-                                pc.addTrack(track, mediaStreamDestination.stream)
-                            })
-                            // 播放音乐(远程)
-                            const audioSource = audioContext.createBufferSource()
-                            audioSource.buffer = audioBuffer
-                            audioSource.connect(mediaStreamDestination)
-                            audioSource.start()
-                            // 播放音乐(本地)
-                            const audioPlayer = new Audio()
-                            audioPlayer.srcObject = mediaStreamDestination.stream
-                            audioPlayer.play()
-                            // 创建SDP offer并将其设置为本地描述, 发送给远程端
-                            const id = clients[0].id
-                            await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
-                            ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
-                        })
-                    }
-                    li.appendChild(start)
-                    const remove = document.createElement('button')
-                    remove.innerText = '移除'
-                    remove.onclick = async () => {
-                        await musicObjectStore.delete(item.id)
-                        li.remove()
-                    }
-                    li.appendChild(remove)
-                    ol.appendChild(li)
-                })
-                document.body.appendChild(ol)
-            })
         }
-        music()
+        //music()
     </script>
     <!--script type="module">
         // 创建 RTCPeerConnection

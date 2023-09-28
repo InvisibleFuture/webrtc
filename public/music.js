@@ -8,8 +8,7 @@ export default class MusicList {
         this.store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         this.store.open().then(() => {
             this.store.getAll().then((data) => {
-                console.log(data)
-                data.forEach(item => this.add(item))
+                data.forEach(item => this.__add(item))
             })
         })
         document.body.appendChild(this.ul)
@@ -29,7 +28,6 @@ export default class MusicList {
         input.multiple = true
         input.accept = 'audio/*'
         input.onchange = event => {
-            console.log('event.target.files', event.target.files)
             for (const file of event.target.files) {
                 const id = 'music' + Date.now()
                 const { name, size, type } = file
@@ -43,8 +41,8 @@ export default class MusicList {
         }
         document.body.appendChild(input)
     }
-    add(item) {
-        this.store.add(item)
+    // 仅添加UI
+    __add(item) {
         const li = ListItem({
             id: item.id,
             innerText: `${item.name} - ${item.size} - ${item.type} - ${item.id}`,
@@ -77,6 +75,11 @@ export default class MusicList {
             ]
         })
         this.ul.appendChild(li)
+    }
+    // 添加数据并添加UI
+    add(item) {
+        this.store.add(item)
+        this.__add(item)
     }
     delete(item) {
         this.store.delete(item.id)
