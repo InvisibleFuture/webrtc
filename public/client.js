@@ -72,7 +72,6 @@ export default class ClientList {
         }
     }
     add(item) {
-        //this.clientlist.push(item)
         this.ul.appendChild(ListItem({
             id: item.id,
             innerText: item.name ?? item.id,
@@ -80,23 +79,6 @@ export default class ClientList {
             },
             chidren: []
         }))
-        //// 与对方建立连接(即使不传输数据)
-        //const webrtc = new RTCPeerConnection()
-        //const channel = webrtc.createDataChannel('music')
-        //channel.onopen = event => {
-        //    console.log('clientlist music: channel.onopen')
-        //    channel.send('hello')
-        //}
-        //channel.onmessage = event => {
-        //    console.log('clientlist music: channel.onmessage', event.data)
-        //}
-        //// 监听 ICE 候选事件
-        //webrtc.onicecandidate = event => {
-        //    if (event.candidate) {
-        //        console.log('clientlist onicecandidate', event.candidate)
-        //        // 发送给对方(通过服务器)
-        //    }
-        //}
     }
     remove(item) {
         this.clientlist = this.clientlist.filter(client => client.id !== item.id)
