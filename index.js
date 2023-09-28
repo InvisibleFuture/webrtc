@@ -1,5 +1,6 @@
 import express from 'express'
 import expressWs from 'express-ws'
+import { exec } from 'child_process'
 
 const app = express()
 const wsInstance = expressWs(app)
@@ -44,6 +45,15 @@ app.ws('/webrtc/:channel', (ws, req) => {
             client.send(JSON.stringify({ type: 'push', id: ws.id, channel: ws.channel }))
             ws.send(JSON.stringify({ type: 'push', id: client.id, channel: client.channel }))
         }
+    })
+})
+
+// WEBHOOK 处理 GitHub 事件
+app.post('/webhook', (req, res) => {
+    console.log('WEBHOOK:', req.body)
+    return exec('git pull;npm i', (err, stdout, stderr) => {
+        if (err) return res.status(500).json({ error: err })
+        return res.json({ stdout, stderr })
     })
 })
 
