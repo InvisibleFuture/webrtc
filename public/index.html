@@ -191,49 +191,6 @@
                 })
                 document.body.appendChild(ol)
             })
-            // 从文件系统中选择音乐文件
-            const button = document.createElement('button')
-            button.innerText = '选择音乐'
-            button.addEventListener('click', async () => {
-                const id = Date.now()
-                const fileHandle = await window.showOpenFilePicker()
-                const file = await fileHandle[0].getFile()
-                const { name, size, type, lastModified, lastModifiedDate } = file
-                const reader = new FileReader()
-                reader.onload = async () => {
-                    const arrayBuffer = reader.result
-                    // 存储到 IndexDB
-                    musicObjectStore.add({ id, name, size, type, lastModified, lastModifiedDate, arrayBuffer })
-                    // 更新列表
-
-                    //// 传输音乐文件
-                    //const audioContext = new AudioContext()
-                    //audioContext.decodeAudioData(arrayBuffer, async audioBuffer => {
-                    //    // 将音乐流添加到 RTCPeerConnection
-                    //    const mediaStreamDestination = audioContext.createMediaStreamDestination()
-                    //    mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
-                    //        pc.addTrack(track, mediaStreamDestination.stream)
-                    //    })
-                    //    // 播放音乐
-                    //    const audioSource = audioContext.createBufferSource()
-                    //    audioSource.buffer = audioBuffer
-                    //    audioSource.connect(mediaStreamDestination)
-                    //    audioSource.start()
-                    //    // 创建本地音频播放器
-                    //    const audioPlayer = new Audio()
-                    //    audioPlayer.srcObject = mediaStreamDestination.stream
-                    //    audioPlayer.play()
-                    //    // 创建SDP offer并将其设置为本地描述, 发送给远程端
-                    //    console.log('创建SDP offer并将其设置为本地描述, 发送给远程端')
-                    //    console.log('clients:', clients)
-                    //    const id = clients[0].id
-                    //    await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
-                    //    ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
-                    //})
-                }
-                reader.readAsArrayBuffer(file)
-            })
-            document.body.appendChild(button)
         }
         music()
     </script>

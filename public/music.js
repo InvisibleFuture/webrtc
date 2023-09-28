@@ -31,7 +31,7 @@ export default class MusicList {
         input.onchange = event => {
             console.log('event.target.files', event.target.files)
             for (const file of event.target.files) {
-                const id = Date.now()
+                const id = 'music' + Date.now()
                 const { name, size, type } = file
                 const reader = new FileReader()
                 reader.onload = async event => {
