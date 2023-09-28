@@ -18,55 +18,17 @@
         
         // 初始化音乐列表
         const musicList = new MusicList()
+        musicList.on('play', item => {
+            console.log('播放音乐', item)
+        })
 
         // 初始化客户端列表
         const clientList = new ClientList()
 
-        //// 初始化音乐频道
-        //const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-        //const host = window.location.host
-        //const ws = new WebSocket(`${protocol}://${host}/webrtc/music`)
-        //ws.onopen = function () {
-        //    console.log('music ws open')
-        //}
-        //ws.onmessage = function (event) {
-        //    const data = JSON.parse(event.data)
-        //    console.log('ws message:', data)
-        //    if (data.type === 'push') {
-        //        console.log('收到 type:push 将设备增加', data.id)
-        //        clientList.add(data.id, data.channel)
-        //        return
-        //    }
-        //    if (data.type === 'pull') {
-        //        console.log('收到 type:pull 将设备删除', data.id)
-        //        clientList.remove(data)
-        //        return
-        //    }
-        //    if (data.type === 'error') {
-        //        console.log('收到 type:error 没什么可操作的', data.id)
-        //        return
-        //    }
-        //    if (data.offer) {
-        //        console.log('收到 offer 并将其设置为远程描述')
-        //        //clientList.setRemoteDescription(data)
-        //        pc.setRemoteDescription(new RTCSessionDescription(data.offer))
-        //        // 创建SDP answer并将其设置为本地描述, 发送给远程端
-        //        pc.createAnswer().then(function (answer) {
-        //            pc.setLocalDescription(answer);
-        //            ws.send(JSON.stringify({ answer }))
-        //        })
-        //        return
-        //    }
-        //    if (data.answer) {
-        //        console.log('收到 answer 并将其设置为远程描述')
-        //        pc.setRemoteDescription(new RTCSessionDescription(data.answer))
-        //        return
-        //    }
-        //    if (data.candidate) {
-        //        console.log('收到 candidate 并将其添加到远程端')
-        //        pc.addIceCandidate(new RTCIceCandidate(data.candidate))
-        //    }
-        //}
+        // 先拉取所有对方的音乐列表, 对比去重, 拉取音乐数据
+        // 主动发送自己的音乐列表, 对比去重, 发送音乐数据
+        console.log('musicList.list:', musicList)
+        clientList.send('music-list', '23333')
 
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {
