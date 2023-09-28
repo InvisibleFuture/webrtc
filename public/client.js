@@ -18,12 +18,12 @@ export default class ClientList {
                 console.log('取得在线对端列表:', data)
                 const webrtc = new RTCPeerConnection()
                 webrtc.createDataChannel('music')
-                //webrtc.onicecandidate = event => {
-                //    console.log('clientlist onicecandidate E', event)
-                //    if (event.candidate) {
-                //        this.websocket.send(JSON.stringify({ type: 'candidate', id: data.id, candidate: event.candidate }))
-                //    }
-                //}
+                webrtc.onicecandidate = event => {
+                    console.log('clientlist onicecandidate E', event)
+                    if (event.candidate) {
+                        this.websocket.send(JSON.stringify({ type: 'candidate', id: data.id, candidate: event.candidate }))
+                    }
+                }
                 console.log('发送给对方 offer')
                 const offer = await webrtc.createOffer()
                 await webrtc.setLocalDescription(offer)
@@ -43,12 +43,12 @@ export default class ClientList {
                 console.log('收到对方 offer', data)
                 const webrtc = new RTCPeerConnection()
                 webrtc.createDataChannel('music')
-                //webrtc.onicecandidate = event => {
-                //    console.log('clientlist onicecandidate X', event)
-                //    if (event.candidate) {
-                //        this.websocket.send(JSON.stringify({ type: 'candidate', id: data.id, candidate: event.candidate }))
-                //    }
-                //}
+                webrtc.onicecandidate = event => {
+                    console.log('clientlist onicecandidate X', event)
+                    if (event.candidate) {
+                        this.websocket.send(JSON.stringify({ type: 'candidate', id: data.id, candidate: event.candidate }))
+                    }
+                }
                 this.clientlist.push({ id: data.id, name: data.name, webrtc })
                 console.log('发送给对方 answer')
                 await webrtc.setRemoteDescription(data.offer)
