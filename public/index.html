@@ -13,13 +13,26 @@
     </div>
     <script type="module">
         import IndexedDB from './database.js'
+        import MusicList from './music.js'
         const musicObjectStore = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         await musicObjectStore.open()
+
+        // 音乐列表
+        const musicList = new MusicList()
+        console.log('musicList:', musicList)
+        //musicList.on('add', async item => {
+        //    console.log('musicList add:', item)
+        //    const { name, size, type, lastModified, lastModifiedDate, arrayBuffer } = item
+        //    const id = Date.now()
+        //    // 存储到 IndexDB
+        //    await musicObjectStore.add({ id, name, size, type, lastModified, lastModifiedDate, arrayBuffer })
+        //})
 
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {
             const clients = [] // 客户端列表
 
+            // 对端设备
             const ul = document.createElement('ul')
             document.body.appendChild(ul)
             const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
@@ -119,18 +132,16 @@
                             mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
                                 pc.addTrack(track, mediaStreamDestination.stream)
                             })
-                            // 播放音乐
+                            // 播放音乐(远程)
                             const audioSource = audioContext.createBufferSource()
                             audioSource.buffer = audioBuffer
                             audioSource.connect(mediaStreamDestination)
                             audioSource.start()
-                            // 创建本地音频播放器
+                            // 播放音乐(本地)
                             const audioPlayer = new Audio()
                             audioPlayer.srcObject = mediaStreamDestination.stream
                             audioPlayer.play()
                             // 创建SDP offer并将其设置为本地描述, 发送给远程端
-                            console.log('创建SDP offer并将其设置为本地描述, 发送给远程端')
-                            console.log('clients:', clients)
                             const id = clients[0].id
                             await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
                             ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
@@ -161,30 +172,32 @@
                     const arrayBuffer = reader.result
                     // 存储到 IndexDB
                     musicObjectStore.add({ id, name, size, type, lastModified, lastModifiedDate, arrayBuffer })
-                    // 传输音乐文件
-                    const audioContext = new AudioContext()
-                    audioContext.decodeAudioData(arrayBuffer, async audioBuffer => {
-                        // 将音乐流添加到 RTCPeerConnection
-                        const mediaStreamDestination = audioContext.createMediaStreamDestination()
-                        mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
-                            pc.addTrack(track, mediaStreamDestination.stream)
-                        })
-                        // 播放音乐
-                        const audioSource = audioContext.createBufferSource()
-                        audioSource.buffer = audioBuffer
-                        audioSource.connect(mediaStreamDestination)
-                        audioSource.start()
-                        // 创建本地音频播放器
-                        const audioPlayer = new Audio()
-                        audioPlayer.srcObject = mediaStreamDestination.stream
-                        audioPlayer.play()
-                        // 创建SDP offer并将其设置为本地描述, 发送给远程端
-                        console.log('创建SDP offer并将其设置为本地描述, 发送给远程端')
-                        console.log('clients:', clients)
-                        const id = clients[0].id
-                        await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
-                        ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
-                    })
+                    // 更新列表
+
+                    //// 传输音乐文件
+                    //const audioContext = new AudioContext()
+                    //audioContext.decodeAudioData(arrayBuffer, async audioBuffer => {
+                    //    // 将音乐流添加到 RTCPeerConnection
+                    //    const mediaStreamDestination = audioContext.createMediaStreamDestination()
+                    //    mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
+                    //        pc.addTrack(track, mediaStreamDestination.stream)
+                    //    })
+                    //    // 播放音乐
+                    //    const audioSource = audioContext.createBufferSource()
+                    //    audioSource.buffer = audioBuffer
+                    //    audioSource.connect(mediaStreamDestination)
+                    //    audioSource.start()
+                    //    // 创建本地音频播放器
+                    //    const audioPlayer = new Audio()
+                    //    audioPlayer.srcObject = mediaStreamDestination.stream
+                    //    audioPlayer.play()
+                    //    // 创建SDP offer并将其设置为本地描述, 发送给远程端
+                    //    console.log('创建SDP offer并将其设置为本地描述, 发送给远程端')
+                    //    console.log('clients:', clients)
+                    //    const id = clients[0].id
+                    //    await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
+                    //    ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
+                    //})
                 }
                 reader.readAsArrayBuffer(file)
             })
