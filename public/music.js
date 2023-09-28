@@ -3,6 +3,7 @@ import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
     constructor() {
+        this.EventListeners = {}
         this.ul = List({})
         this.store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         this.store.open().then(() => {
@@ -18,9 +19,9 @@ export default class MusicList {
         this.audio.addEventListener('ended', () => {
             this.next()
         })
-        this.audio.addEventListener('timeupdate', () => {
-            console.log(this.audio.currentTime)
-        })
+        //this.audio.addEventListener('timeupdate', () => {
+        //    console.log(this.audio.currentTime)
+        //})
 
         // 添加音乐按钮
         const input = document.createElement('input')
@@ -49,14 +50,14 @@ export default class MusicList {
             innerText: `${item.name} - ${item.size} - ${item.type} - ${item.id}`,
             onclick: event => {
                 event.stopPropagation()
-                this.play(item.id)
+                this.play(item)
             },
             children: [
                 Button({
                     innerText: '播放',
                     onclick: event => {
                         event.stopPropagation()
-                        this.play(item.id)
+                        this.play(item)
                     }
                 }),
                 Button({
@@ -70,22 +71,38 @@ export default class MusicList {
                     innerText: '移除',
                     onclick: event => {
                         event.stopPropagation()
-                        this.delete(item.id)
+                        this.delete(item)
                     }
                 })
             ]
         })
         this.ul.appendChild(li)
     }
-    delete(id) {
-        // 如果是正在播放的歌曲，停止播放
-        this.stop(id)
-        const li = this.ul.querySelector(`li[data-id="${id}"]`)
-        this.ul.removeChild(li)
-        this.store.delete(id)
+    delete(item) {
+        this.store.delete(item.id)
+        this.ul.removeChild(this.ul.querySelector(`#${item.id}`))
+        this.stop() // 停止播放
     }
-    play(id) { }
-    stop(id) { }
+    play(item) {
+        this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
+        this.audio.play()
+        this._on('play', item)
+    }
+    stop() {
+        this.audio.pause()
+        this.audio.src = ''
+        this._on('stop')
+    }
     next() { }
     prev() { }
+    // 添加回调函数
+    on(name, callback) {
+        this.EventListeners[name] = callback
+    }
+    // 执行回调函数
+    _on(name, ...args) {
+        if (this.EventListeners[name]) {
+            this.EventListeners[name](...args)
+        }
+    }
 }

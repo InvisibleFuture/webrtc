@@ -40,6 +40,38 @@
             const ws = new WebSocket(`${protocol}://${host}/webrtc/music`)
             const pc = new RTCPeerConnection()
 
+            var audioSource = null
+            // 监听音乐列表播放事件
+            musicList.on('play', async item => {
+                audioSource?.stop() // 先停止可能在播放的音乐
+                console.log('播放音乐', item.arrayBuffer)
+                // 复制一份 item.arrayBuffer
+                const arrayBuffer = item.arrayBuffer.slice(0)
+                // 传输音乐文件向远程端
+                const audioContext = new AudioContext()
+                audioContext.decodeAudioData(arrayBuffer, async audioBuffer => {
+                    // 将音乐流添加到 RTCPeerConnection
+                    const mediaStreamDestination = audioContext.createMediaStreamDestination()
+                    mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
+                        pc.addTrack(track, mediaStreamDestination.stream)
+                    })
+                    // 播放音乐(远程)
+                    audioSource = audioContext.createBufferSource()
+                    audioSource.buffer = audioBuffer
+                    audioSource.connect(mediaStreamDestination)
+                    audioSource.start()
+                    // 创建SDP offer并将其设置为本地描述, 发送给指定的远程端
+                    const id = clients[0].id
+                    await pc.setLocalDescription(await pc.createOffer())     // 设置本地描述为 offer
+                    ws.send(JSON.stringify({ id, offer: pc.localDescription }))  // 发送给远程终端 offer
+                })
+            })
+            // 监听音乐列表停止事件
+            musicList.on('stop', async () => {
+                audioSource?.stop()
+                audioSource = null
+            })
+
             // 监听 ICE 候选事件
             pc.onicecandidate = event => {
                 if (event.candidate) {
