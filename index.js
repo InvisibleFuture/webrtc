@@ -47,4 +47,4 @@ app.ws('/webrtc/:channel', (ws, req) => {
     })
 })
 
-app.listen(3000, () => console.log('Server started on port 3000'))
+app.listen(4096, () => console.log('Server started on port 4096'))
