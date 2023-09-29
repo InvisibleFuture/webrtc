@@ -73,6 +73,13 @@ export default class MusicList {
                         event.stopPropagation()
                         this.delete(item)
                     }
+                }),
+                Button({
+                    innerText: '喜欢',
+                    onclick: event => {
+                        event.stopPropagation()
+                        // 留存到本地
+                    }
                 })
             ]
         })
@@ -80,7 +87,14 @@ export default class MusicList {
     }
     // 叠加数据(双方数据计数器上升)
     async push(item) {
-        console.log('叠加数据:', item)
+        console.log('叠加数据: 只增加UI不存储本地', item)
+        // 先检测是否已经存在
+        const data = await this.store.get(item.id)
+        if (data) {
+            console.log('数据已存在:', data)
+            return
+        }
+        this.__add(item)
     }
     // 添加数据并添加UI
     add(item) {
