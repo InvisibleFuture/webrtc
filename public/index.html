@@ -15,7 +15,7 @@
         import IndexedDB from './database.js'
         import MusicList from './music.js'
         import ClientList from './client.js'
-        
+
         // 初始化音乐列表
         const musicList = new MusicList()
         musicList.on('play', item => {
@@ -23,12 +23,39 @@
         })
 
         // 初始化客户端列表
-        const clientList = new ClientList()
+        const clientList = new ClientList({
+            channels: {
+                'musicList': {
+                    onopen: async (event, channel) => {
+                        const list = await musicList.list
+                        console.log('musicList:', list)
+                        channel.send(JSON.stringify(list))
+                    },
+                    onmessage: async (event, channel) => {
+                        console.log('收到 musicList:', event)
+                        JSON.parse(event.data).forEach(item => {
+                            musicList.push(item)
+                        })
+                    },
+                },
+            }
+        })
+
+        // 在什么时机发送musicList?
+        // 通道准备好时即可发送
+
+
+        clientList.on('channel')
+
+        // 只需要在注册时拉取列表, 播放时才需要拉取音乐数据
 
         // 先拉取所有对方的音乐列表, 对比去重, 拉取音乐数据
         // 主动发送自己的音乐列表, 对比去重, 发送音乐数据
-        console.log('musicList.list:', musicList)
-        clientList.send('music-list', '23333')
+        //clientList.on('list', async client => {
+        //    console.log('push:', client)
+        //    const musicList = await clientList.send('music-list', '23333')
+        //    console.log('musicList:', musicList)
+        //})
 
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {

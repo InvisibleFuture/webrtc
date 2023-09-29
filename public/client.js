@@ -1,8 +1,8 @@
 import { List, ListItem } from './weigets.js'
 
 export default class ClientList {
-    constructor() {
-        this.EventListeners = {}
+    constructor({ channels = {}, EventListeners = {} }) {
+        this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = window.location.host
         this.websocket = new WebSocket(`${protocol}://${host}/webrtc/music`)
@@ -13,15 +13,41 @@ export default class ClientList {
             const data = JSON.parse(event.data)
             const webrtc_init = () => {
                 const webrtc = new RTCPeerConnection()
+                Object.entries(channels).forEach(([name, callback]) => {
+                    const channel = webrtc.createDataChannel(name)
+                    channel.onopen = event => {
+                        console.log('datachannel 已打开', event)
+                        if (callback.onopen) callback.onopen(event, channel)
+                    }
+                    channel.onclose = event => {
+                        console.log('datachannel 已关闭', event)
+                        if (callback.onclose) callback.onclose(event, channel)
+                    }
+                    channel.onerror = event => {
+                        console.log('datachannel 发生错误', event)
+                        if (callback.onerror) callback.onerror(event, channel)
+                    }
+                    channel.onmessage = event => {
+                        console.log('datachannel 收到数据', event)
+                        if (callback.onmessage) callback.onmessage(event, channel)
+                    }
+                })
                 webrtc.onicecandidate = event => {
                     if (event.candidate) {
-                        this.websocket.send(JSON.stringify({ type: 'candidate', id: data.id, candidate: event.candidate }))
+                        this.websocket.send(JSON.stringify({
+                            type: 'candidate',
+                            id: data.id,
+                            candidate: event.candidate
+                        }))
                     }
                 }
-                webrtc.ondatachannel = event => {
-                    console.log('收到对方 datachannel', event.channel)
-                    event.channel.onmessage = event => {
-                        console.log('收到对方 datachannel message', event.data)
+                webrtc.ondatachannel = ({ channel }) => {
+                    console.log('收到对方 datachannel', channel)
+                    channel.onmessage = event => {
+                        console.log('收到对方 datachannel message', event)
+                        if (channels[event.target.label]) {
+                            channels[event.target.label].onmessage(event, channel)
+                        }
                     }
                 }
                 webrtc.oniceconnectionstatechange = event => {
@@ -37,7 +63,8 @@ export default class ClientList {
                 await webrtc.setLocalDescription(offer)
                 this.clientlist.push({ id: data.id, name: data.name, webrtc })
                 this.websocket.send(JSON.stringify({ type: 'offer', id: data.id, offer }))
-                return this.add(data)
+                this.add(data)
+                return
             }
             if (data.type === 'push') {
                 console.log('新上线客户端:', data)
@@ -103,6 +130,7 @@ export default class ClientList {
     send(name, data) {
         console.log('广播数据:', data, '到通道:', name, '到所有客户端')
         this.clientlist.forEach(client => {
+            console.log('发送数据到客户端:', client.id)
             const channel = client.webrtc.getDataChannel(name) ?? client.webrtc.createDataChannel(name)
             channel.send(data)
         })

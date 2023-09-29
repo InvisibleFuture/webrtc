@@ -5,9 +5,11 @@ export default class MusicList {
     constructor() {
         this.EventListeners = {}
         this.ul = List({})
+        this.list = []
         this.store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         this.store.open().then(() => {
             this.store.getAll().then((data) => {
+                this.list = data
                 data.forEach(item => this.__add(item))
             })
         })
@@ -75,6 +77,10 @@ export default class MusicList {
             ]
         })
         this.ul.appendChild(li)
+    }
+    // 叠加数据(双方数据计数器上升)
+    async push(item) {
+        console.log('叠加数据:', item)
     }
     // 添加数据并添加UI
     add(item) {
