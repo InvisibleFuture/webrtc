@@ -78,7 +78,14 @@ export default class MusicList {
                     innerText: '喜欢',
                     onclick: event => {
                         event.stopPropagation()
-                        // 留存到本地
+                        this.like(item)
+                    }
+                }),
+                Button({
+                    innerText: '禁止',
+                    onclick: event => {
+                        event.stopPropagation()
+                        // BAN
                     }
                 })
             ]
@@ -115,6 +122,15 @@ export default class MusicList {
         this.audio.pause()
         this.audio.src = ''
         this._on('stop')
+    }
+    like(item) {
+        if (!item.arrayBuffer) {
+            console.log('载入缓存:', item)
+            return
+        } else {
+            console.log('移除缓存:', item)
+            return
+        }
     }
     next() { }
     prev() { }
