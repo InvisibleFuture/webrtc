@@ -18,19 +18,19 @@ export default class ClientList {
                     const channel = webrtc.createDataChannel(name)
                     channel.onopen = event => {
                         //console.log('datachannel 已打开', event)
-                        if (callback.onopen) callback.onopen(event, channel)
+                        if (callback.onopen) callback.onopen(event)
                     }
                     channel.onclose = event => {
                         //console.log('datachannel 已关闭', event)
-                        if (callback.onclose) callback.onclose(event, channel)
+                        if (callback.onclose) callback.onclose(event)
                     }
                     channel.onerror = event => {
                         //console.log('datachannel 发生错误', event)
-                        if (callback.onerror) callback.onerror(event, channel)
+                        if (callback.onerror) callback.onerror(event)
                     }
                     channel.onmessage = event => {
                         //console.log('datachannel 收到数据', event)
-                        if (callback.onmessage) callback.onmessage(event, channel)
+                        if (callback.onmessage) callback.onmessage(event)
                     }
                 })
                 webrtc.onicecandidate = event => {
@@ -43,9 +43,9 @@ export default class ClientList {
                     }
                 }
                 webrtc.ondatachannel = ({ channel }) => {
-                    console.log('收到对方 datachannel', channel)
+                    //console.log('收到对方 datachannel', channel)
                     channel.onmessage = event => {
-                        console.log('收到对方 datachannel message', event)
+                        //console.log('收到对方 datachannel message', event)
                         if (channels[event.target.label]) {
                             channels[event.target.label].onmessage(event, channel)
                         }
@@ -100,6 +100,9 @@ export default class ClientList {
             }
             console.log('收到未知数据:', data)
         }
+    }
+    setChannel(name, option) {
+        this.channels[name] = option
     }
     add(item) {
         this.ul.appendChild(ListItem({

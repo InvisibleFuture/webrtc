@@ -16,57 +16,80 @@
         import MusicList from './music.js'
         import ClientList from './client.js'
 
-        // 打开数据库
+        // 读取本地音乐列表(本地缓存)
         const store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         await store.open()
         const list = await store.getAll()
+        console.log('本地音乐列表:', list)
 
-        // 初始化音乐列表
+        // 初始化音乐列表(加入本地缓存)
         const musicList = new MusicList({ list })
+        //musicList.add()                // 添加音乐
+        //musicList.remove()             // 移除音乐
+        musicList.on('remove', item => {
+            console.log('移除音乐', item)
+            store.delete(item.id)
+        })
         musicList.on('play', item => {
             console.log('播放音乐', item)
         })
 
         // 初始化客户端列表
-        const clientList = new ClientList({
-            channels: {
-                'musicList': {
-                    onopen: async (event, channel) => {
-                        const list = await musicList.list
-                        console.log('发送 musicList:', list)
-                        channel.send(JSON.stringify(list.map(({ arrayBuffer, ...data }) => data)))
-                    },
-                    onmessage: async (event, channel) => {
-                        console.log('收到 musicList:', event)
-                        JSON.parse(event.data).forEach(item => {
-                            musicList.push(item)
-                        })
-                    }
-                },
-                'musicload': {
-                    onopen: async (event, channel) => {
-                        console.log('发送 musicload:', event)
-                    },
-                    onmessage: async (event, channel) => {
-                        console.log('收到 musicload:', event)
-                    }
-                }
+        const clientList = new ClientList({})
+        clientList.setChannel('musicList', {
+            onopen: async event => {
+                console.log('发送 musicList:', event)
+                const data = musicList.list.map(({ arrayBuffer, ...item }) => item)
+                event.target.send(JSON.stringify(data))
+            },
+            onmessage: async event => {
+                console.log('收到 musicList:', event)
+                JSON.parse(event.data).forEach(item => {
+                    musicList.add(item)
+                })
             }
         })
 
+        //// 初始化客户端列表
+        //const clientList = new ClientList({
+        //    channels: {
+        //        'musicList': {
+        //            onopen: async (event, channel) => {
+        //                const list = await musicList.list
+        //                console.log('发送 musicList:', list)
+        //                channel.send(JSON.stringify(list.map(({ arrayBuffer, ...data }) => data)))
+        //            },
+        //            onmessage: async (event, channel) => {
+        //                console.log('收到 musicList:', event)
+        //                JSON.parse(event.data).forEach(item => {
+        //                    musicList.push(item)
+        //                })
+        //            }
+        //        },
+        //        'musicload': {
+        //            onopen: async (event, channel) => {
+        //                console.log('发送 musicload:', event)
+        //            },
+        //            onmessage: async (event, channel) => {
+        //                console.log('收到 musicload:', event)
+        //            }
+        //        }
+        //    }
+        //})
+        // 通过指定通道发送消息
+        // 接收处理各种通道消息
         // 延迟2秒执行
-        await new Promise(resolve => setTimeout(resolve, 2000))
-
-        // 设定被动传输
-        clientList.clientlist.forEach(client => {
-            console.log('client:', client)
-            client.webrtc.addEventListener('datachannel', event => {
-                console.log('收到 datachannel:', event)
-                event.channel.addEventListener('message', event => {
-                    console.log('收到消息:', event)
-                })
-            })
-        })
+        //await new Promise(resolve => setTimeout(resolve, 2000))
+        //// 设定被动传输
+        //clientList.clientlist.forEach(client => {
+        //    console.log('client:', client)
+        //    client.webrtc.addEventListener('datachannel', event => {
+        //        console.log('收到 datachannel:', event)
+        //        event.channel.addEventListener('message', event => {
+        //            console.log('收到消息:', event)
+        //        })
+        //    })
+        //})
 
         //musicList.on('load', item => {
         //    console.log('从来源加载音乐', item)
@@ -80,7 +103,7 @@
         // like对方的条目时亮起(双方高亮)(本地缓存)(可由对比缓存实现)
         // ban对方的条目时灰掉(也禁止对方播放)(并保持ban表)(由插件实现)
 
-        clientList.on('channel')
+        //clientList.on('channel')
 
         // 只需要在注册时拉取列表, 播放时才需要拉取音乐数据
 

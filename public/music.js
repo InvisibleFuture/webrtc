@@ -2,17 +2,12 @@ import IndexedDB from './database.js'
 import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
-    constructor(EventListeners = {}) {
-        this.EventListeners = EventListeners
+    constructor({ list = [], EventListeners = {} }) {
         this.ul = List({})
+        this.EventListeners = EventListeners
         this.list = []
-        this.store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
-        this.store.open().then(async () => {
-            this.list = await this.store.getAll()
-            this.list.forEach(item => this.__add(item))
-            this.EventListeners['ready'](this.list)
-        })
-        document.body.appendChild(this.ul)
+        list.forEach(item => this.add(item)) // 列表逐一添加
+        document.body.appendChild(this.ul)   // 元素加入页面
 
         // 添加音乐播放器
         this.audio = new Audio()
@@ -23,7 +18,7 @@ export default class MusicList {
         //    console.log(this.audio.currentTime)
         //})
 
-        // 添加音乐按钮
+        // 本地添加音乐按钮
         const input = document.createElement('input')
         input.type = 'file'
         input.multiple = true
@@ -42,9 +37,13 @@ export default class MusicList {
         }
         document.body.appendChild(input)
     }
-    // 仅添加UI
-    __add(item) {
-        const li = ListItem({
+    // 添加回调函数
+    on(name, callback) {
+        this.EventListeners[name] = callback
+    }
+    add(item) {
+        this.list.push(item)
+        this.ul.appendChild(ListItem({
             id: item.id,
             innerText: `${item.name} - ${item.size} - ${item.type} - ${item.id}`,
             children: [
@@ -66,7 +65,7 @@ export default class MusicList {
                     innerText: '移除',
                     onclick: event => {
                         event.stopPropagation()
-                        this.delete(item)
+                        this.remove(item)
                     }
                 }),
                 Button({
@@ -84,29 +83,15 @@ export default class MusicList {
                     }
                 })
             ]
-        })
-        this.ul.appendChild(li)
+        }))
     }
-    // 叠加数据(双方数据计数器上升)
-    async push(item) {
-        console.log('叠加数据: 只增加UI不存储本地', item)
-        // 先检测是否已经存在
-        const data = await this.store.get(item.id)
-        if (data) {
-            console.log('数据已存在:', data)
-            return
-        }
-        this.__add(item)
-    }
-    // 添加数据并添加UI
-    add(item) {
-        this.store.add(item)
-        this.__add(item)
-    }
-    delete(item) {
-        this.store.delete(item.id)
+    remove(item) {
         this.ul.removeChild(this.ul.querySelector(`#${item.id}`))
         this.stop() // 停止播放
+        // 执行回调函数
+        if (this.EventListeners['remove']) {
+            this.EventListeners['remove'](item)
+        }
     }
     async play(item) {
         // 如果没有arrayBuffer则从对方获取
@@ -117,12 +102,18 @@ export default class MusicList {
         }
         this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
         this.audio.play()
-        this._on('play', item)
+        // 执行回调函数
+        if (this.EventListeners['play']) {
+            this.EventListeners['play'](item)
+        }
     }
     stop() {
         this.audio.pause()
         this.audio.src = ''
-        this._on('stop')
+        // 执行回调函数
+        if (this.EventListeners['stop']) {
+            this.EventListeners['stop']()
+        }
     }
     like(item) {
         if (!item.arrayBuffer) {
@@ -135,14 +126,4 @@ export default class MusicList {
     }
     next() { }
     prev() { }
-    // 添加回调函数
-    on(name, callback) {
-        this.EventListeners[name] = callback
-    }
-    // 执行回调函数
-    _on(name, ...args) {
-        if (this.EventListeners[name]) {
-            this.EventListeners[name](...args)
-        }
-    }
 }
