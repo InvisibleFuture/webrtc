@@ -36,86 +36,82 @@
         const clientList = new ClientList({})
         clientList.setChannel('musicList', {
             onopen: async event => {
-                const data = musicList.list.filter(item=>{
+                const data = musicList.list.filter(item => {
                     return !!item.arrayBuffer
                 }).map(({ arrayBuffer, ...item }) => item)
                 console.log('发送 musicList:', data)
                 event.target.send(JSON.stringify(data))
             },
-            onmessage: async event => {
+            onmessage: async (event, client) => {
                 console.log('收到 musicList:', event)
                 const data = JSON.parse(event.data)
                 const ids = musicList.list.map(item => item.id)
-                data.filter(item=>!ids.includes(item.id)).forEach(item=>{
+                data.filter(item => !ids.includes(item.id)).forEach(item => {
                     musicList.add(item)
                 })
+                // 将数据设置到这个客户端
+                console.log('设置 musicList:', data)
+                console.log('设置 musicList:', event)
+                console.log('当前客户端', client)
+                client.musicList = data
+            }
+        })
+        clientList.setChannel('musicload', {
+            onopen: async event => {
+                // 连接打开时要求发送某一条音乐数据?
+
+                //console.log('发送 musicload')
+                //const buffer = new ArrayBuffer(8)
+                //const json = { name: 'John', age: 30 }
+                //const jsonString = JSON.stringify(json)
+                //const jsonBuffer = new TextEncoder().encode(jsonString).buffer
+                //const lengthBuffer = new ArrayBuffer(8)
+                //const lengthView = new DataView(lengthBuffer)
+                //lengthView.setUint32(0, jsonBuffer.byteLength)
+                //const mergedBuffer = new ArrayBuffer(lengthBuffer.byteLength + jsonBuffer.byteLength + buffer.byteLength)
+                //const mergedView = new Uint8Array(mergedBuffer)
+                //mergedView.set(new Uint8Array(lengthBuffer), 0)
+                //mergedView.set(new Uint8Array(jsonBuffer), lengthBuffer.byteLength)
+                //mergedView.set(new Uint8Array(buffer), lengthBuffer.byteLength + jsonBuffer.byteLength)
+                //event.target.send(mergedBuffer)
+            },
+            onmessage: async event => {
+                console.log('收到 musicload')
+                const view = new DataView(event.data)
+                const len = new ArrayBuffer(8)
+                // 解析出原始数据, 更简洁的方式
+                const lengthBuffer = event.data.slice(0, len.byteLength)
+                const lengthView = new DataView(lengthBuffer)
+                console.log('getUint32', lengthView.getUint32(0))
+                const jsonBuffer = event.data.slice(len.byteLength, len.byteLength + lengthView.getUint32(0))
+                const jsonView = new DataView(jsonBuffer)
+                console.log('json', JSON.parse(new TextDecoder().decode(jsonBuffer)))
+                const buffer = event.data.slice(len.byteLength + lengthView.getUint32(0))
+                console.log('buffer', buffer)
             }
         })
 
-        //// 初始化客户端列表
-        //const clientList = new ClientList({
-        //    channels: {
-        //        'musicList': {
-        //            onopen: async (event, channel) => {
-        //                const list = await musicList.list
-        //                console.log('发送 musicList:', list)
-        //                channel.send(JSON.stringify(list.map(({ arrayBuffer, ...data }) => data)))
-        //            },
-        //            onmessage: async (event, channel) => {
-        //                console.log('收到 musicList:', event)
-        //                JSON.parse(event.data).forEach(item => {
-        //                    musicList.push(item)
-        //                })
-        //            }
-        //        },
-        //        'musicload': {
-        //            onopen: async (event, channel) => {
-        //                console.log('发送 musicload:', event)
-        //            },
-        //            onmessage: async (event, channel) => {
-        //                console.log('收到 musicload:', event)
-        //            }
-        //        }
-        //    }
-        //})
-        // 通过指定通道发送消息
-        // 接收处理各种通道消息
-        // 延迟2秒执行
-        //await new Promise(resolve => setTimeout(resolve, 2000))
-        //// 设定被动传输
-        //clientList.clientlist.forEach(client => {
-        //    console.log('client:', client)
-        //    client.webrtc.addEventListener('datachannel', event => {
-        //        console.log('收到 datachannel:', event)
-        //        event.channel.addEventListener('message', event => {
-        //            console.log('收到消息:', event)
-        //        })
-        //    })
-        //})
+        musicList.on('load', item => {
+            console.log('从来源加载音乐', item)
+            // 选择一个含有此音乐的客户端
+            const client = clientList.clientlist.find(client => {
+                console.log('client:', client)
+                if (!client.musicList) client.musicList = []
+                return client.musicList.some(music => music.id === item.id)
+            })
+            if (!client) return console.log('没有找到含有此音乐的客户端')
+            console.log('找到含有此音乐的客户端', client)
 
-        //musicList.on('load', item => {
-        //    console.log('从来源加载音乐', item)
-        //    clientList.send('musicList', JSON.stringify([item]))
-        //})
-
-        // 在什么时机发送musicList?
-        // 通道准备好时即可发送
+            //clientList.send('musicList', JSON.stringify([item]))
+        })
 
         // 获取对方的音乐列表
         // like对方的条目时亮起(双方高亮)(本地缓存)(可由对比缓存实现)
         // ban对方的条目时灰掉(也禁止对方播放)(并保持ban表)(由插件实现)
-
-        //clientList.on('channel')
-
         // 只需要在注册时拉取列表, 播放时才需要拉取音乐数据
+    </script>
 
-        // 先拉取所有对方的音乐列表, 对比去重, 拉取音乐数据
-        // 主动发送自己的音乐列表, 对比去重, 发送音乐数据
-        //clientList.on('list', async client => {
-        //    console.log('push:', client)
-        //    const musicList = await clientList.send('music-list', '23333')
-        //    console.log('musicList:', musicList)
-        //})
+    <!--script type="module">
 
         // webRTC 传递音乐(分别传输文件和操作事件能更流畅)
         const music = async function () {
@@ -234,7 +230,7 @@
             }
         }
         //music()
-    </script>
+    </script-->
     <!--script type="module">
         // 创建 RTCPeerConnection
         const pc = new RTCPeerConnection()
@@ -253,7 +249,7 @@
                 pc.setRemoteDescription(new RTCSessionDescription(data.offer))
                 // 创建SDP answer并将其设置为本地描述, 发送给远程端
                 pc.createAnswer().then(function (answer) {
-                    pc.setLocalDescription(answer);
+                    pc.setLocalDescription(answer)
                     ws.send(JSON.stringify({ answer }))
                 })
                 return
@@ -277,16 +273,16 @@
             // 获取本地视频流
             navigator.mediaDevices.getUserMedia({ audio: false, video: true }).then(stream => {
                 // 创建本地视频元素
-                const localVideo = document.createElement('video');
-                localVideo.srcObject = stream;
-                localVideo.autoplay = true;
-                localVideo.muted = true;
-                document.body.appendChild(localVideo);
+                const localVideo = document.createElement('video')
+                localVideo.srcObject = stream
+                localVideo.autoplay = true
+                localVideo.muted = true
+                document.body.appendChild(localVideo)
 
                 // 添加本地视频流到 RTCPeerConnection
                 stream.getTracks().forEach(function (track) {
-                    pc.addTrack(track, stream);
-                });
+                    pc.addTrack(track, stream)
+                })
 
                 // 监听 ICE candidate 事件
                 pc.onicecandidate = function (event) {
@@ -294,20 +290,20 @@
                         // 发送 ICE candidate 到远程端
                         ws.send(JSON.stringify({ candidate: event.candidate }))
                     }
-                };
+                }
 
                 // 监听远程视频流事件
                 pc.ontrack = function (event) {
                     // 创建远程视频元素
-                    var remoteVideo = document.createElement('video');
-                    remoteVideo.srcObject = event.streams[0];
-                    remoteVideo.autoplay = true;
-                    document.body.appendChild(remoteVideo);
+                    var remoteVideo = document.createElement('video')
+                    remoteVideo.srcObject = event.streams[0]
+                    remoteVideo.autoplay = true
+                    document.body.appendChild(remoteVideo)
                 }
 
                 // 创建SDP offer并将其设置为本地描述, 发送给远程端
                 pc.createOffer().then(function (offer) {
-                    pc.setLocalDescription(offer);
+                    pc.setLocalDescription(offer)
                     ws.send(JSON.stringify({ offer }))
                 })
 

@@ -1,4 +1,3 @@
-import IndexedDB from './database.js'
 import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
@@ -93,12 +92,15 @@ export default class MusicList {
             this.EventListeners['remove'](item)
         }
     }
+    async load(item) {
+        // 执行回调函数(应当异步)
+        if (this.EventListeners['load']) {
+            await this.EventListeners['load'](item)
+        }
+    }
     async play(item) {
-        // 如果没有arrayBuffer则从对方获取
-        console.log('play:', item)
         if (!item.arrayBuffer) {
-            console.log('从对方获取:', item)
-            return
+            await this.load(item)
         }
         this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
         this.audio.play()

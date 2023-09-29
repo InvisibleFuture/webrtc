@@ -47,7 +47,7 @@ export default class ClientList {
                     channel.onmessage = event => {
                         //console.log('收到对方 datachannel message', event)
                         if (channels[event.target.label]) {
-                            channels[event.target.label].onmessage(event, channel)
+                            channels[event.target.label].onmessage(event, this.clientlist.find(x => x.id === data.id))
                         }
                     }
                 }
