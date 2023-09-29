@@ -16,8 +16,13 @@
         import MusicList from './music.js'
         import ClientList from './client.js'
 
+        // 打开数据库
+        const store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
+        await store.open()
+        const list = await store.getAll()
+
         // 初始化音乐列表
-        const musicList = new MusicList()
+        const musicList = new MusicList({ list })
         musicList.on('play', item => {
             console.log('播放音乐', item)
         })
@@ -28,18 +33,45 @@
                 'musicList': {
                     onopen: async (event, channel) => {
                         const list = await musicList.list
-                        console.log('musicList:', list)
-                        channel.send(JSON.stringify(list))
+                        console.log('发送 musicList:', list)
+                        channel.send(JSON.stringify(list.map(({ arrayBuffer, ...data }) => data)))
                     },
                     onmessage: async (event, channel) => {
                         console.log('收到 musicList:', event)
                         JSON.parse(event.data).forEach(item => {
                             musicList.push(item)
                         })
-                    },
+                    }
                 },
+                'musicload': {
+                    onopen: async (event, channel) => {
+                        console.log('发送 musicload:', event)
+                    },
+                    onmessage: async (event, channel) => {
+                        console.log('收到 musicload:', event)
+                    }
+                }
             }
         })
+
+        // 延迟2秒执行
+        await new Promise(resolve => setTimeout(resolve, 2000))
+
+        // 设定被动传输
+        clientList.clientlist.forEach(client => {
+            console.log('client:', client)
+            client.webrtc.addEventListener('datachannel', event => {
+                console.log('收到 datachannel:', event)
+                event.channel.addEventListener('message', event => {
+                    console.log('收到消息:', event)
+                })
+            })
+        })
+
+        //musicList.on('load', item => {
+        //    console.log('从来源加载音乐', item)
+        //    clientList.send('musicList', JSON.stringify([item]))
+        //})
 
         // 在什么时机发送musicList?
         // 通道准备好时即可发送

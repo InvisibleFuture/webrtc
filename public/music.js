@@ -2,16 +2,15 @@ import IndexedDB from './database.js'
 import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
-    constructor() {
-        this.EventListeners = {}
+    constructor(EventListeners = {}) {
+        this.EventListeners = EventListeners
         this.ul = List({})
         this.list = []
         this.store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
-        this.store.open().then(() => {
-            this.store.getAll().then((data) => {
-                this.list = data
-                data.forEach(item => this.__add(item))
-            })
+        this.store.open().then(async () => {
+            this.list = await this.store.getAll()
+            this.list.forEach(item => this.__add(item))
+            this.EventListeners['ready'](this.list)
         })
         document.body.appendChild(this.ul)
 
@@ -48,10 +47,6 @@ export default class MusicList {
         const li = ListItem({
             id: item.id,
             innerText: `${item.name} - ${item.size} - ${item.type} - ${item.id}`,
-            onclick: event => {
-                event.stopPropagation()
-                this.play(item)
-            },
             children: [
                 Button({
                     innerText: '播放',
@@ -113,7 +108,13 @@ export default class MusicList {
         this.ul.removeChild(this.ul.querySelector(`#${item.id}`))
         this.stop() // 停止播放
     }
-    play(item) {
+    async play(item) {
+        // 如果没有arrayBuffer则从对方获取
+        console.log('play:', item)
+        if (!item.arrayBuffer) {
+            console.log('从对方获取:', item)
+            return
+        }
         this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
         this.audio.play()
         this._on('play', item)

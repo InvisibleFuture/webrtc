@@ -2,6 +2,7 @@ import { List, ListItem } from './weigets.js'
 
 export default class ClientList {
     constructor({ channels = {}, EventListeners = {} }) {
+        this.channels = channels
         this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = window.location.host
@@ -16,19 +17,19 @@ export default class ClientList {
                 Object.entries(channels).forEach(([name, callback]) => {
                     const channel = webrtc.createDataChannel(name)
                     channel.onopen = event => {
-                        console.log('datachannel 已打开', event)
+                        //console.log('datachannel 已打开', event)
                         if (callback.onopen) callback.onopen(event, channel)
                     }
                     channel.onclose = event => {
-                        console.log('datachannel 已关闭', event)
+                        //console.log('datachannel 已关闭', event)
                         if (callback.onclose) callback.onclose(event, channel)
                     }
                     channel.onerror = event => {
-                        console.log('datachannel 发生错误', event)
+                        //console.log('datachannel 发生错误', event)
                         if (callback.onerror) callback.onerror(event, channel)
                     }
                     channel.onmessage = event => {
-                        console.log('datachannel 收到数据', event)
+                        //console.log('datachannel 收到数据', event)
                         if (callback.onmessage) callback.onmessage(event, channel)
                     }
                 })
@@ -51,14 +52,14 @@ export default class ClientList {
                     }
                 }
                 webrtc.oniceconnectionstatechange = event => {
-                    console.log('WebRTC ICE 连接状态更改:', webrtc.iceConnectionState)
+                    //console.log('WebRTC ICE 连接状态更改:', webrtc.iceConnectionState)
                 }
                 return webrtc
             }
             if (data.type === 'list') {
-                console.log('取得在线对端列表:', data)
+                //console.log('取得在线对端列表:', data)
                 const webrtc = webrtc_init()
-                console.log('发送给对方 offer')
+                //console.log('发送给对方 offer')
                 const offer = await webrtc.createOffer()
                 await webrtc.setLocalDescription(offer)
                 this.clientlist.push({ id: data.id, name: data.name, webrtc })
@@ -75,10 +76,10 @@ export default class ClientList {
                 return this.remove(data)
             }
             if (data.type === 'offer') {
-                console.log('收到对方 offer', data)
+                //console.log('收到对方 offer', data)
                 const webrtc = webrtc_init()
                 this.clientlist.push({ id: data.id, name: data.name, webrtc })
-                console.log('发送给对方 answer')
+                //console.log('发送给对方 answer')
                 await webrtc.setRemoteDescription(data.offer)
                 const answer = await webrtc.createAnswer()
                 await webrtc.setLocalDescription(answer)
@@ -86,15 +87,16 @@ export default class ClientList {
                 return
             }
             if (data.type === 'answer') {
-                console.log('收到对方 answer', data)
+                //console.log('收到对方 answer', data)
                 const pc = this.clientlist.find(client => client.id === data.id).webrtc
                 await pc.setRemoteDescription(data.answer)
                 return
             }
             if (data.type === 'candidate') {
+                // console.log('收到 candidate 并将其添加到远程端', data.candidate)
                 const pc = this.clientlist.find(client => client.id === data.id).webrtc
                 await pc.addIceCandidate(data.candidate)
-                return console.log('收到 candidate 并将其添加到远程端', data.candidate)
+                return
             }
             console.log('收到未知数据:', data)
         }
