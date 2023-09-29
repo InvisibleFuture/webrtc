@@ -24,8 +24,6 @@
 
         // 初始化音乐列表(加入本地缓存)
         const musicList = new MusicList({ list })
-        //musicList.add()                // 添加音乐
-        //musicList.remove()             // 移除音乐
         musicList.on('remove', item => {
             console.log('移除音乐', item)
             store.delete(item.id)
@@ -38,13 +36,17 @@
         const clientList = new ClientList({})
         clientList.setChannel('musicList', {
             onopen: async event => {
-                console.log('发送 musicList:', event)
-                const data = musicList.list.map(({ arrayBuffer, ...item }) => item)
+                const data = musicList.list.filter(item=>{
+                    return !!item.arrayBuffer
+                }).map(({ arrayBuffer, ...item }) => item)
+                console.log('发送 musicList:', data)
                 event.target.send(JSON.stringify(data))
             },
             onmessage: async event => {
                 console.log('收到 musicList:', event)
-                JSON.parse(event.data).forEach(item => {
+                const data = JSON.parse(event.data)
+                const ids = musicList.list.map(item => item.id)
+                data.filter(item=>!ids.includes(item.id)).forEach(item=>{
                     musicList.add(item)
                 })
             }
