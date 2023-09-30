@@ -27,15 +27,6 @@
         if (!name) {
             localStorage.setItem('username', `user-${Math.random().toString(36).substr(2)}`)
         }
-        // 设置自己的主机名
-        const nameInput = document.createElement('input')
-        nameInput.type = 'text'
-        nameInput.placeholder = '请设置你的名字'
-        nameInput.onchange = event => {
-            localStorage.setItem('username', event.target.value)
-            window.location.reload() // 简单刷新页面
-        }
-        document.body.appendChild(nameInput)
 
         // 初始化音乐列表(加入本地缓存)
         const musicList = new MusicList({ list })
@@ -151,6 +142,20 @@
         // like对方的条目时亮起(双方高亮)(本地缓存)(可由对比缓存实现)
         // ban对方的条目时灰掉(也禁止对方播放)(并保持ban表)(由插件实现)
         // 只需要在注册时拉取列表, 播放时才需要拉取音乐数据
+
+        // 延迟1500ms
+        //await new Promise((resolve) => setTimeout(resolve, 100))
+
+        // 设置自己的主机名
+        const nameInput = document.createElement('input')
+        nameInput.type = 'text'
+        nameInput.placeholder = '请设置你的名字'
+        nameInput.value = name
+        nameInput.onchange = event => {
+            localStorage.setItem('username', event.target.value)
+            window.location.reload() // 简单刷新页面
+        }
+        document.body.appendChild(nameInput)
     </script>
 
     <!--script type="module">
