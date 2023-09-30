@@ -35,36 +35,21 @@ export default class MusicList {
             }
         }
         //// 写入 css 样式到 head
-        //const style = document.createElement('style')
-        //style.innerText = `
-        //    ul.music-list {
-        //        width: 600px;
-        //        height: 100%;
-        //        overflow: auto;
-        //        background-color: #ffffff;
-        //        box-shadow: 0 0 15px #ccc;
-        //        border-radius: 5px;
-        //        padding: 1rem 2rem;
-        //        margin: 1rem;
-        //    }
-        //    ul.music-list > li {
-        //        list-style: none;
-        //        padding: 10px;
-        //        border-bottom: 1px solid #ccc;
-        //        cursor: pointer;
-        //    }
-        //    ul.music-list > li:hover {
-        //        background-color: #ddd;
-        //    }
-        //    ul.music-list > li > button {
-        //        margin-right: 10px;
-        //    }
-        //    ul.music-list > li > button:hover {
-        //        background-color: #ccc;
-        //    }
-        //    ul.music-list > li
-        //    `
-        //document.head.appendChild(style)
+        const style = document.createElement('style')
+        style.innerText = `
+            ul.music-list > li {
+                cursor: pointer;
+            }
+            ul.music-list > li > button {
+                margin-left: 10px;
+                border: none;
+                cursor: pointer;
+            }
+            ul.music-list > li > button:hover {
+                background-color: #ccc;
+            }
+            `
+        document.head.appendChild(style)
         document.body.appendChild(input)
     }
     // 添加回调函数
