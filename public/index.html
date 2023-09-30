@@ -45,18 +45,6 @@
                         if (buffer.byteLength >= item.size) {
                             console.log('音乐数据接收完毕')
                             item.arrayBuffer = buffer
-                            //// 尝试直接播放音乐
-                            //const audioContext = new AudioContext()
-                            //audioContext.decodeAudioData(item.arrayBuffer, async audioBuffer => {
-                            //    const mediaStreamDestination = audioContext.createMediaStreamDestination()
-                            //    mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
-                            //        client.webrtc.addTrack(track, mediaStreamDestination.stream)
-                            //    })
-                            //    const audioSource = audioContext.createBufferSource()
-                            //    audioSource.buffer = audioBuffer
-                            //    audioSource.connect(mediaStreamDestination)
-                            //    audioSource.start()
-                            //})
                             resolve()
                         }
                     }
