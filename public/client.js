@@ -114,7 +114,7 @@ export default class ClientList {
                     //this.websocket = linkStart()
                     // 调试模式: 直接刷新页面重载
                     window.location.reload()
-                }, 1000)
+                }, 3000)
             }
             return websocket
         }
