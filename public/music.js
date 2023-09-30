@@ -3,6 +3,7 @@ import { Button, List, ListItem } from './weigets.js'
 export default class MusicList {
     constructor({ list = [], EventListeners = {} }) {
         this.ul = List({})
+        this.ul.classList.add('music-list')
         this.EventListeners = EventListeners
         this.list = []
         list.forEach(item => this.add(item)) // 列表逐一添加
@@ -34,6 +35,37 @@ export default class MusicList {
                 reader.readAsArrayBuffer(file)
             }
         }
+        //// 写入 css 样式到 head
+        //const style = document.createElement('style')
+        //style.innerText = `
+        //    ul.music-list {
+        //        width: 600px;
+        //        height: 100%;
+        //        overflow: auto;
+        //        background-color: #ffffff;
+        //        box-shadow: 0 0 15px #ccc;
+        //        border-radius: 5px;
+        //        padding: 1rem 2rem;
+        //        margin: 1rem;
+        //    }
+        //    ul.music-list > li {
+        //        list-style: none;
+        //        padding: 10px;
+        //        border-bottom: 1px solid #ccc;
+        //        cursor: pointer;
+        //    }
+        //    ul.music-list > li:hover {
+        //        background-color: #ddd;
+        //    }
+        //    ul.music-list > li > button {
+        //        margin-right: 10px;
+        //    }
+        //    ul.music-list > li > button:hover {
+        //        background-color: #ccc;
+        //    }
+        //    ul.music-list > li
+        //    `
+        //document.head.appendChild(style)
         document.body.appendChild(input)
     }
     // 添加回调函数

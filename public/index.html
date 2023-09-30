@@ -58,6 +58,8 @@
             console.log('添加音乐', item)
             if (item.arrayBuffer) {
                 store.add(item)
+                // 告知对方音乐列表有更新
+                clientList.send('base', JSON.stringify({ type: 'set_music_list', list: musicList.list.map(({ id, name, size, type }) => ({ id, name, size, type })) }))
             }
         })
 
