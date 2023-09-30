@@ -9,7 +9,7 @@
 <body>
     <div>
         <h1>webRTC</h1>
-        <p>选择音乐使频道内所有设备同步播放</p>
+        <p>选择音乐使频道内所有设备同步播放 chrome://webrtc-internals/</p>
     </div>
     <script type="module">
         import IndexedDB from './database.js'
@@ -34,78 +34,94 @@
 
         // 初始化客户端列表
         const clientList = new ClientList({})
-        clientList.setChannel('musicList', {
+
+        // 缓冲分片发送
+        const CHUNK_SIZE = 1024 * 128 // 每个块的大小为128KB
+        const THRESHOLD = 1024 * 1024 // 缓冲区的阈值为1MB
+        const DELAY = 500             // 延迟500ms
+
+        // 将两个ArrayBuffer合并成一个
+        function appendBuffer(buffer1, buffer2) {
+            const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength)
+            tmp.set(new Uint8Array(buffer1), 0)
+            tmp.set(new Uint8Array(buffer2), buffer1.byteLength)
+            return tmp.buffer
+        }
+        // 只有一个基本信道, 用于交换和调度信息
+        clientList.setChannel('base', {
             onopen: async event => {
-                const data = musicList.list.filter(item => {
-                    return !!item.arrayBuffer
-                }).map(({ arrayBuffer, ...item }) => item)
-                console.log('发送 musicList:', data)
-                event.target.send(JSON.stringify(data))
+                // 要求对方发送音乐列表
+                clientList.send('base', JSON.stringify({ type: 'get_music_list' }))
             },
             onmessage: async (event, client) => {
-                console.log('收到 musicList:', event)
-                const data = JSON.parse(event.data)
-                const ids = musicList.list.map(item => item.id)
-                data.filter(item => !ids.includes(item.id)).forEach(item => {
-                    musicList.add(item)
-                })
-                // 将数据设置到这个客户端
-                console.log('设置 musicList:', data)
-                console.log('设置 musicList:', event)
-                console.log('当前客户端', client)
-                client.musicList = data
+                const { type, id, channel, list } = JSON.parse(event.data)
+                console.log('收到 base 基本信道数据:', type, id, channel)
+                if (type === 'get_music_list') {
+                    console.log('发送音乐列表:', musicList.list)
+                    clientList.send('base', JSON.stringify({
+                        type: 'set_music_list',
+                        list: musicList.list.map(({ id, name, size, type }) => ({ id, name, size, type }))
+                    }))
+                    return
+                }
+                if (type === 'set_music_list') {
+                    console.log('接收音乐列表:', event)
+                    // 将音乐列表添加到本地
+                    const ids = musicList.list.map(item => item.id)
+                    list.filter(item => !ids.includes(item.id)).forEach(item => {
+                        musicList.add(item)
+                    })
+                    // 从获得的列表随机选一个音乐下载
+                    const item = list[Math.floor(Math.random() * list.length)]
+                    console.log('从获得的列表随机选一个音乐下载', item)
+                    // 建立一个专用信道, 用于接收音乐数据(接收方已经准备好摘要信息)
+                    const channel = `music-data-${item.id}`
+                    var buffer = new ArrayBuffer(0)
+                    var count = 0
+                    clientList.setChannel(channel, {
+                        onmessage: async (event, client) => {
+                            buffer = appendBuffer(buffer, event.data)
+                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
+                            count++
+                            if (buffer.byteLength >= item.size) {
+                                console.log('音乐数据接收完毕')
+                                item.ArrayBuffer = buffer
+                            }
+                        }
+                    })
+                    // 要求对方从指定信道发送音乐数据
+                    clientList.send('base', JSON.stringify({ type: 'get_music_data', id: item.id, channel }))
+                    return
+                }
+                if (type === 'get_music_data') {
+                    // 建立一个信道, 用于传输音乐数据(接收方已经准备好摘要信息)
+                    console.log('建立一个信道, 用于传输音乐数据', musicList.list)
+                    musicList.list.filter(item => item.id === id).forEach(item => {
+                        const ch = client.webrtc.createDataChannel(channel, { reliable: true })
+                        ch.onopen = async event => {
+                            console.log(`打开 ${channel} 信道, 传输音乐数据`)
+                            // 将音乐数据分成多个小块，并逐个发送
+                            async function sendChunk(dataChannel, data, index = 0, buffer = new ArrayBuffer(0)) {
+                                while (index < data.byteLength) {
+                                    if (dataChannel.bufferedAmount <= THRESHOLD) {
+                                        const chunk = data.slice(index, index + CHUNK_SIZE)
+                                        dataChannel.send(chunk)
+                                        index += CHUNK_SIZE
+                                        buffer = appendBuffer(buffer, chunk)
+                                    }
+                                    await new Promise((resolve) => setTimeout(resolve, DELAY))
+                                }
+                                return buffer
+                            }
+                            await sendChunk(ch, item.arrayBuffer)
+                            console.log(`发送 ${channel} 信道数据结束`)
+                        }
+                    })
+                    return
+                }
+                console.log('未知类型:', type)
             }
         })
-        clientList.setChannel('musicload', {
-            onopen: async event => {
-                // 连接打开时要求发送某一条音乐数据?
-
-                //console.log('发送 musicload')
-                //const buffer = new ArrayBuffer(8)
-                //const json = { name: 'John', age: 30 }
-                //const jsonString = JSON.stringify(json)
-                //const jsonBuffer = new TextEncoder().encode(jsonString).buffer
-                //const lengthBuffer = new ArrayBuffer(8)
-                //const lengthView = new DataView(lengthBuffer)
-                //lengthView.setUint32(0, jsonBuffer.byteLength)
-                //const mergedBuffer = new ArrayBuffer(lengthBuffer.byteLength + jsonBuffer.byteLength + buffer.byteLength)
-                //const mergedView = new Uint8Array(mergedBuffer)
-                //mergedView.set(new Uint8Array(lengthBuffer), 0)
-                //mergedView.set(new Uint8Array(jsonBuffer), lengthBuffer.byteLength)
-                //mergedView.set(new Uint8Array(buffer), lengthBuffer.byteLength + jsonBuffer.byteLength)
-                //event.target.send(mergedBuffer)
-            },
-            onmessage: async event => {
-                console.log('收到 musicload')
-                const view = new DataView(event.data)
-                const len = new ArrayBuffer(8)
-                // 解析出原始数据, 更简洁的方式
-                const lengthBuffer = event.data.slice(0, len.byteLength)
-                const lengthView = new DataView(lengthBuffer)
-                console.log('getUint32', lengthView.getUint32(0))
-                const jsonBuffer = event.data.slice(len.byteLength, len.byteLength + lengthView.getUint32(0))
-                const jsonView = new DataView(jsonBuffer)
-                console.log('json', JSON.parse(new TextDecoder().decode(jsonBuffer)))
-                const buffer = event.data.slice(len.byteLength + lengthView.getUint32(0))
-                console.log('buffer', buffer)
-            }
-        })
-
-        musicList.on('load', item => {
-            console.log('从来源加载音乐', item)
-            // 选择一个含有此音乐的客户端
-            const client = clientList.clientlist.find(client => {
-                console.log('client:', client)
-                if (!client.musicList) client.musicList = []
-                return client.musicList.some(music => music.id === item.id)
-            })
-            if (!client) return console.log('没有找到含有此音乐的客户端')
-            console.log('找到含有此音乐的客户端', client)
-
-            //clientList.send('musicList', JSON.stringify([item]))
-        })
-
-        // 获取对方的音乐列表
         // like对方的条目时亮起(双方高亮)(本地缓存)(可由对比缓存实现)
         // ban对方的条目时灰掉(也禁止对方播放)(并保持ban表)(由插件实现)
         // 只需要在注册时拉取列表, 播放时才需要拉取音乐数据

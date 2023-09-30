@@ -101,6 +101,7 @@ export default class MusicList {
     async play(item) {
         if (!item.arrayBuffer) {
             await this.load(item)
+            return console.log('等待载入缓存:', item)
         }
         this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
         this.audio.play()
