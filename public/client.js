@@ -1,15 +1,16 @@
 import { List, ListItem } from './weigets.js'
 
 export default class ClientList {
-    constructor({ channels = {}, EventListeners = {} }) {
+    constructor({ channels = {}, EventListeners = {}, name }) {
         this.channels = channels
         this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = window.location.host
-        this.websocket = new WebSocket(`${protocol}://${host}/webrtc/music`)
+        this.websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${name}`)
         this.clientlist = []
         this.ul = List({})
         document.body.appendChild(this.ul)
+
         this.websocket.onmessage = async event => {
             const data = JSON.parse(event.data)
             const channels_init = (webrtc) => {

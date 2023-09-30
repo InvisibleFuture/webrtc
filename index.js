@@ -10,6 +10,7 @@ app.use(express.static('public'))
 app.ws('/webrtc/:channel', (ws, req) => {
     ws.id = req.headers['sec-websocket-key']
     ws.channel = req.params.channel
+    ws.name = req.query.name
     // 设备离开频道时广播给所有在线设备
     ws.on('close', () => {
         console.log(ws.id, '设备离开频道:', ws.channel, wsInstance.getWss().clients.size)
@@ -42,8 +43,8 @@ app.ws('/webrtc/:channel', (ws, req) => {
     console.log(ws.id, '设备加入频道:', ws.channel, wsInstance.getWss().clients.size)
     wsInstance.getWss().clients.forEach(client => {
         if (client !== ws && client.readyState === 1 && client.channel === ws.channel) {
-            client.send(JSON.stringify({ type: 'push', id: ws.id, channel: ws.channel }))
-            ws.send(JSON.stringify({ type: 'list', id: client.id, channel: client.channel }))
+            client.send(JSON.stringify({ type: 'push', id: ws.id, name: ws.name, channel: ws.channel }))
+            ws.send(JSON.stringify({ type: 'list', id: client.id, name: client.name, channel: client.channel }))
         }
     })
 })
