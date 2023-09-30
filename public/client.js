@@ -15,16 +15,6 @@ export default class ClientList {
             const websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${username}`)
             websocket.onmessage = async event => {
                 const data = JSON.parse(event.data)
-                const channels_init = (webrtc) => {
-                    return Object.entries(this.channels).map(([name, callback]) => {
-                        const channel = webrtc.createDataChannel(name, { reliable: true })
-                        channel.onopen = callback.onopen
-                        channel.onclose = callback.onclose
-                        channel.onerror = callback.onerror
-                        channel.onmessage = callback.onmessage
-                        return channel
-                    })
-                }
                 const webrtc_init = () => {
                     const webrtc = new RTCPeerConnection()
                     webrtc.onicecandidate = event => {
@@ -38,28 +28,45 @@ export default class ClientList {
                     }
                     webrtc.ondatachannel = ({ channel }) => {
                         console.log('对方建立数据通道', channel.label)
+                        const client = this.clientlist.find(x => x.id === data.id)
+                        const option = this.channels[channel.label]
                         channel.onopen = event => {
                             console.log('对方打开数据通道', channel.label)
-                            if (this.channels[event.target.label] && this.channels[event.target.label].onopen) {
-                                this.channels[event.target.label].onopen(event, this.clientlist.find(x => x.id === data.id))
+                            if (option && option.onopen) {
+                                option.onopen(event, client)
                             }
                         }
                         channel.onmessage = event => {
-                            //console.log('对方发送数据消息', JSON.parse(event.data).type)
-                            if (this.channels[event.target.label] && this.channels[event.target.label].onmessage) {
-                                this.channels[event.target.label].onmessage(event, this.clientlist.find(x => x.id === data.id))
+                            console.log('对方发送数据消息', JSON.parse(event.data).type)
+                            if (option && option.onmessage) {
+                                option.onmessage(event, client)
+                            }
+                        }
+                        channel.onclose = event => {
+                            console.log('对方关闭数据通道', channel.label)
+                            if (option && option.onclose) {
+                                option.onclose(event, client)
+                            }
+                        }
+                        channel.onerror = event => {
+                            console.log('对方数据通道发生错误', channel.label)
+                            if (option && option.onerror) {
+                                option.onerror(event, client)
                             }
                         }
                     }
                     webrtc.oniceconnectionstatechange = event => {
-                        //console.log('WebRTC ICE 连接状态更改:', webrtc.iceConnectionState)
+                        console.log('WebRTC ICE 连接状态更改:', webrtc.iceConnectionState)
                     }
-                    return webrtc
+                    const channels = Object.entries(this.channels).map(([name, callback]) => {
+                        const channel = webrtc.createDataChannel(name, { reliable: true })
+                        return channel
+                    })
+                    return { webrtc, channels }
                 }
                 if (data.type === 'list') {
                     //console.log('取得在线对端列表:', data)
-                    const webrtc = webrtc_init()
-                    const channels = channels_init(webrtc)
+                    const { webrtc, channels } = webrtc_init()
                     //console.log('发送给对方 offer')
                     const offer = await webrtc.createOffer()
                     await webrtc.setLocalDescription(offer)
@@ -78,8 +85,7 @@ export default class ClientList {
                 }
                 if (data.type === 'offer') {
                     //console.log('收到对方 offer', data)
-                    const webrtc = webrtc_init()
-                    const channels = channels_init(webrtc)
+                    const { webrtc, channels } = webrtc_init()
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
                     //console.log('发送给对方 answer')
                     await webrtc.setRemoteDescription(data.offer)
@@ -95,7 +101,7 @@ export default class ClientList {
                     return
                 }
                 if (data.type === 'candidate') {
-                    // console.log('收到 candidate 并将其添加到远程端', data.candidate)
+                    console.log('收到 candidate 并将其添加到远程端')
                     const pc = this.clientlist.find(client => client.id === data.id).webrtc
                     await pc.addIceCandidate(data.candidate)
                     return

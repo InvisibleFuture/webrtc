@@ -89,6 +89,7 @@
         // 只有一个基本信道, 用于交换和调度信息
         clientList.setChannel('base', {
             onopen: async event => {
+                console.log('打开信道', event.target.label)
                 // 要求对方发送音乐列表
                 clientList.send('base', JSON.stringify({ type: 'get_music_list' }))
             },
