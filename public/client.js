@@ -40,13 +40,13 @@ export default class ClientList {
                         console.log('收到对方 datachannel', channel)
                         channel.onopen = event => {
                             console.log('收到对方 datachannel open', event)
-                            if (this.channels[event.target.label]) {
+                            if (this.channels[event.target.label] && this.channels[event.target.label].onopen) {
                                 this.channels[event.target.label].onopen(event, this.clientlist.find(x => x.id === data.id))
                             }
                         }
                         channel.onmessage = event => {
                             console.log('收到对方 datachannel message', event)
-                            if (this.channels[event.target.label]) {
+                            if (this.channels[event.target.label] && this.channels[event.target.label].onmessage) {
                                 this.channels[event.target.label].onmessage(event, this.clientlist.find(x => x.id === data.id))
                             }
                         }
