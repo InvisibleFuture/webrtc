@@ -11,6 +11,7 @@ app.ws('/webrtc/:channel', (ws, req) => {
     ws.id = req.headers['sec-websocket-key']
     ws.channel = req.params.channel
     ws.name = req.query.name
+    console.log('ws.name:', ws.name)
     // 设备离开频道时广播给所有在线设备
     ws.on('close', () => {
         console.log(ws.id, '设备离开频道:', ws.channel, wsInstance.getWss().clients.size)
@@ -35,7 +36,7 @@ app.ws('/webrtc/:channel', (ws, req) => {
         const data = JSON.parse(message)
         wsInstance.getWss().clients.forEach(client => {
             if (client !== ws && client.readyState === 1 && client.channel === ws.channel && client.id === data.id) {
-                client.send(JSON.stringify({ ...data, id: ws.id }))
+                client.send(JSON.stringify({ ...data, id: ws.id, name: ws.name }))
             }
         })
     })
@@ -43,6 +44,7 @@ app.ws('/webrtc/:channel', (ws, req) => {
     console.log(ws.id, '设备加入频道:', ws.channel, wsInstance.getWss().clients.size)
     wsInstance.getWss().clients.forEach(client => {
         if (client !== ws && client.readyState === 1 && client.channel === ws.channel) {
+            console.log(ws.name, '广播给在线设备:', client.name)
             client.send(JSON.stringify({ type: 'push', id: ws.id, name: ws.name, channel: ws.channel }))
             ws.send(JSON.stringify({ type: 'list', id: client.id, name: client.name, channel: client.channel }))
         }

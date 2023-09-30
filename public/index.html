@@ -20,7 +20,7 @@
         const store = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         await store.open()
         const list = await store.getAll()
-        console.log('本地音乐列表:', list)
+        //console.log('本地音乐列表:', list)
 
         // 读取本地用户名(本地缓存)
         const name = localStorage.getItem('username')
@@ -31,15 +31,15 @@
         // 初始化音乐列表(加入本地缓存)
         const musicList = new MusicList({ list })
         musicList.on('remove', item => {
-            console.log('移除音乐', item)
+            //console.log('移除音乐', item)
             store.delete(item.id)
         })
         musicList.on('play', item => {
-            console.log('播放音乐', item)
+            //console.log('播放音乐', item)
         })
         musicList.on('load', async item => {
             await new Promise((resolve) => {
-                console.log('加载音乐', item)
+                //console.log('加载音乐', item)
                 // 建立一个专用信道, 用于接收音乐数据(接收方已经准备好摘要信息)
                 var buffer = new ArrayBuffer(0)
                 var count = 0
@@ -62,7 +62,7 @@
             })
         })
         musicList.on('add', item => {
-            console.log('添加音乐', item)
+            //console.log('添加音乐', item)
             if (item.arrayBuffer) {
                 store.add(item)
                 // 告知对方音乐列表有更新
@@ -71,6 +71,7 @@
         })
 
         // 初始化客户端列表
+        console.log('初始化客户端列表', 'name:', name)
         const clientList = new ClientList({ name })
 
         // 缓冲分片发送
@@ -93,9 +94,7 @@
             },
             onmessage: async (event, client) => {
                 const { type, id, channel, list } = JSON.parse(event.data)
-                console.log('收到 base 基本信道数据:', type, id, channel)
                 if (type === 'get_music_list') {
-                    console.log(client, '请求音乐列表x')
                     console.log(client.name, '请求音乐列表:', musicList.list)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
@@ -104,8 +103,7 @@
                     return
                 }
                 if (type === 'set_music_list') {
-                    console.log(client, '发来音乐列表x')
-                    console.log(client.name, '发来音乐列表:', event)
+                    console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
                     // 将音乐列表添加到本地
                     const ids = musicList.list.map(item => item.id)
                     list.filter(item => !ids.includes(item.id)).forEach(item => {

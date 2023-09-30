@@ -1,7 +1,7 @@
 import { List, ListItem } from './weigets.js'
 
 export default class ClientList {
-    constructor({ channels = {}, EventListeners = {}, name }) {
+    constructor({ channels = {}, EventListeners = {}, name: username }) {
         this.channels = channels
         this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
@@ -12,7 +12,7 @@ export default class ClientList {
 
         // 连接 WebSocket
         const linkStart = () => {
-            const websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${name}`)
+            const websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${username}`)
             websocket.onmessage = async event => {
                 const data = JSON.parse(event.data)
                 const channels_init = (webrtc) => {
@@ -37,15 +37,15 @@ export default class ClientList {
                         }
                     }
                     webrtc.ondatachannel = ({ channel }) => {
-                        console.log('收到对方 datachannel', channel)
+                        console.log('对方建立数据通道', channel.label)
                         channel.onopen = event => {
-                            console.log('收到对方 datachannel open', event)
+                            console.log('对方打开数据通道', channel.label)
                             if (this.channels[event.target.label] && this.channels[event.target.label].onopen) {
                                 this.channels[event.target.label].onopen(event, this.clientlist.find(x => x.id === data.id))
                             }
                         }
                         channel.onmessage = event => {
-                            console.log('收到对方 datachannel message', event)
+                            //console.log('对方发送数据消息', JSON.parse(event.data).type)
                             if (this.channels[event.target.label] && this.channels[event.target.label].onmessage) {
                                 this.channels[event.target.label].onmessage(event, this.clientlist.find(x => x.id === data.id))
                             }
@@ -144,7 +144,7 @@ export default class ClientList {
     send(name, data) {
         //console.log('广播数据:', data, '到通道:', name, '到所有客户端')
         this.clientlist.forEach(client => {
-            console.log('发送数据到客户端:', client.id, client.name, '通道:', name, '数据:', data)
+            //console.log('发送数据到客户端:', client.id, client.name, '通道:', name, '数据:', data)
             client.channels.filter(ch => ch.label === name).forEach(async ch => {
                 // 等待 datachannel 打开(临时解决方案)
                 while (ch.readyState !== 'open') {
