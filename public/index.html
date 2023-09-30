@@ -56,7 +56,9 @@
         })
         musicList.on('add', item => {
             console.log('添加音乐', item)
-            store.put(item)
+            if (item.arrayBuffer) {
+                store.add(item)
+            }
         })
 
         // 初始化客户端列表
