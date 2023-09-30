@@ -17,7 +17,6 @@ export default class MusicList {
         //this.audio.addEventListener('timeupdate', () => {
         //    console.log(this.audio.currentTime)
         //})
-
         // 本地添加音乐按钮
         const input = document.createElement('input')
         input.type = 'file'
@@ -73,10 +72,18 @@ export default class MusicList {
         this.EventListeners[name] = callback
     }
     add(item) {
+        // 将字节转换为可读的单位
+        const bytesToSize = bytes => {
+            if (bytes === 0) return '0 B'
+            const k = 1024
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+            const i = Math.floor(Math.log(bytes) / Math.log(k))
+            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]
+        }
         this.list.push(item)
         this.ul.appendChild(ListItem({
             id: item.id,
-            innerText: `${item.name} - ${item.size} - ${item.type} - ${item.id}`,
+            innerText: `${item.name} - ${bytesToSize(item.size)}`,
             children: [
                 Button({
                     innerText: '播放',

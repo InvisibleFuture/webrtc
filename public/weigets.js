@@ -11,11 +11,12 @@ export function List({ children = [] }) {
     return ul
 }
 
-export function ListItem({ innerText, onclick, id, children = [] }) {
+export function ListItem({ innerText, onclick, id, children = [], dataset }) {
     const li = document.createElement('li')
     li.innerText = innerText
     li.onclick = onclick
     li.id = id
+    dataset && Object.keys(dataset).forEach(key => li.dataset[key] = dataset[key])
     children.forEach(child => li.appendChild(child))
     return li
 }
