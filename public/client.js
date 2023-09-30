@@ -6,7 +6,6 @@ export default class ClientList {
         this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = window.location.host
-        this.websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${name}`)
         this.clientlist = []
         this.ul = List({})
         document.body.appendChild(this.ul)
