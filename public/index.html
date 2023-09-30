@@ -31,6 +31,41 @@
         musicList.on('play', item => {
             console.log('播放音乐', item)
         })
+        musicList.on('load', async item => {
+            await new Promise((resolve) => {
+                console.log('加载音乐', item)
+                // 建立一个专用信道, 用于接收音乐数据(接收方已经准备好摘要信息)
+                var buffer = new ArrayBuffer(0)
+                var count = 0
+                clientList.setChannel(`music-data-${item.id}`, {
+                    onmessage: async (event, client) => {
+                        buffer = appendBuffer(buffer, event.data)
+                        console.log('收到音乐数据 chunk', count, buffer.byteLength)
+                        count++
+                        if (buffer.byteLength >= item.size) {
+                            console.log('音乐数据接收完毕')
+                            item.arrayBuffer = buffer
+                            //// 尝试直接播放音乐
+                            //const audioContext = new AudioContext()
+                            //audioContext.decodeAudioData(item.arrayBuffer, async audioBuffer => {
+                            //    const mediaStreamDestination = audioContext.createMediaStreamDestination()
+                            //    mediaStreamDestination.stream.getAudioTracks().forEach(function (track) {
+                            //        client.webrtc.addTrack(track, mediaStreamDestination.stream)
+                            //    })
+                            //    const audioSource = audioContext.createBufferSource()
+                            //    audioSource.buffer = audioBuffer
+                            //    audioSource.connect(mediaStreamDestination)
+                            //    audioSource.start()
+                            //})
+                            resolve()
+                        }
+                    }
+                })
+                // 要求对方从指定信道发送音乐数据
+                clientList.send('base', JSON.stringify({ type: 'get_music_data', id: item.id, channel: `music-data-${item.id}` }))
+                //store.put(item) // 只有在like时才保存到本地
+            })
+        })
 
         // 初始化客户端列表
         const clientList = new ClientList({})
@@ -38,7 +73,7 @@
         // 缓冲分片发送
         const CHUNK_SIZE = 1024 * 128 // 每个块的大小为128KB
         const THRESHOLD = 1024 * 1024 // 缓冲区的阈值为1MB
-        const DELAY = 500             // 延迟500ms
+        const DELAY = 100             // 延迟500ms
 
         // 将两个ArrayBuffer合并成一个
         function appendBuffer(buffer1, buffer2) {
@@ -71,26 +106,6 @@
                     list.filter(item => !ids.includes(item.id)).forEach(item => {
                         musicList.add(item)
                     })
-                    // 从获得的列表随机选一个音乐下载
-                    const item = list[Math.floor(Math.random() * list.length)]
-                    console.log('从获得的列表随机选一个音乐下载', item)
-                    // 建立一个专用信道, 用于接收音乐数据(接收方已经准备好摘要信息)
-                    const channel = `music-data-${item.id}`
-                    var buffer = new ArrayBuffer(0)
-                    var count = 0
-                    clientList.setChannel(channel, {
-                        onmessage: async (event, client) => {
-                            buffer = appendBuffer(buffer, event.data)
-                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
-                            count++
-                            if (buffer.byteLength >= item.size) {
-                                console.log('音乐数据接收完毕')
-                                item.ArrayBuffer = buffer
-                            }
-                        }
-                    })
-                    // 要求对方从指定信道发送音乐数据
-                    clientList.send('base', JSON.stringify({ type: 'get_music_data', id: item.id, channel }))
                     return
                 }
                 if (type === 'get_music_data') {
