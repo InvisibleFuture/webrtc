@@ -95,6 +95,7 @@
                 const { type, id, channel, list } = JSON.parse(event.data)
                 console.log('收到 base 基本信道数据:', type, id, channel)
                 if (type === 'get_music_list') {
+                    console.log(client, '请求音乐列表x')
                     console.log(client.name, '请求音乐列表:', musicList.list)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
@@ -103,6 +104,7 @@
                     return
                 }
                 if (type === 'set_music_list') {
+                    console.log(client, '发来音乐列表x')
                     console.log(client.name, '发来音乐列表:', event)
                     // 将音乐列表添加到本地
                     const ids = musicList.list.map(item => item.id)
