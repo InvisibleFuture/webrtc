@@ -38,8 +38,14 @@ export default class ClientList {
                     }
                     webrtc.ondatachannel = ({ channel }) => {
                         console.log('收到对方 datachannel', channel)
+                        channel.onopen = event => {
+                            console.log('收到对方 datachannel open', event)
+                            if (this.channels[event.target.label]) {
+                                this.channels[event.target.label].onopen(event, this.clientlist.find(x => x.id === data.id))
+                            }
+                        }
                         channel.onmessage = event => {
-                            //console.log('收到对方 datachannel message', event)
+                            console.log('收到对方 datachannel message', event)
                             if (this.channels[event.target.label]) {
                                 this.channels[event.target.label].onmessage(event, this.clientlist.find(x => x.id === data.id))
                             }
@@ -137,7 +143,11 @@ export default class ClientList {
         //console.log('广播数据:', data, '到通道:', name, '到所有客户端')
         this.clientlist.forEach(client => {
             console.log('发送数据到客户端:', client.id, client.name, '通道:', name, '数据:', data)
-            client.channels.filter(ch => ch.label === name).forEach(ch => {
+            client.channels.filter(ch => ch.label === name).forEach(async ch => {
+                // 等待 datachannel 打开(临时解决方案)
+                while (ch.readyState !== 'open') {
+                    await new Promise(resolve => setTimeout(resolve, 100))
+                }
                 ch.send(data)
             })
         })
