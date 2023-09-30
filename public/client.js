@@ -105,7 +105,9 @@ export default class ClientList {
             websocket.onclose = event => {
                 console.log('WebSocket 断线重连...')
                 setTimeout(() => {
-                    this.websocket = linkStart()
+                    //this.websocket = linkStart()
+                    // 调试模式: 直接刷新页面重载
+                    window.location.reload()
                 }, 1000)
             }
             return websocket
