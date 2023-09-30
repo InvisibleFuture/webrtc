@@ -37,7 +37,7 @@ export default class ClientList {
                             }
                         }
                         channel.onmessage = event => {
-                            console.log('对方发送数据消息', JSON.parse(event.data).type)
+                            //console.log('对方发送数据消息', channel.label)
                             if (option && option.onmessage) {
                                 option.onmessage(event, client)
                             }
