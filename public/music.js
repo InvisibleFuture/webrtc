@@ -121,7 +121,8 @@ export default class MusicList {
         }
     }
     remove(item) {
-        this.ul.removeChild(this.ul.querySelector(`#${item.id}`))
+        const el = this.ul.querySelector(`#${item.id}`)
+        if (el) this.ul.removeChild()
         this.stop() // 停止播放
         // 执行回调函数
         if (this.EventListeners['remove']) {
