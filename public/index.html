@@ -51,6 +51,7 @@
                         if (buffer.byteLength >= item.size) {
                             console.log('音乐数据接收完毕')
                             item.arrayBuffer = buffer
+                            event.target.close() // 关闭信道
                             resolve()
                         }
                     }
@@ -132,6 +133,7 @@
                             }
                             await sendChunk(ch, item.arrayBuffer)
                             console.log(`发送 ${channel} 信道数据结束`)
+                            ch.close() // 关闭信道
                         }
                     })
                     return
