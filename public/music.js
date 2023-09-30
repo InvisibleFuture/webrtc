@@ -89,14 +89,15 @@ export default class MusicList {
                     innerText: '播放',
                     onclick: event => {
                         event.stopPropagation()
-                        this.play(item)
-                    }
-                }),
-                Button({
-                    innerText: '停止',
-                    onclick: event => {
-                        event.stopPropagation()
-                        this.stop(item.id)
+                        if (event.target.dataset.play === 'play') {
+                            event.target.dataset.play = 'stop'
+                            event.target.innerText = '播放'
+                            this.stop()
+                        } else {
+                            event.target.dataset.play = 'play'
+                            event.target.innerText = '停止'
+                            this.play(item)
+                        }
                     }
                 }),
                 Button({
@@ -117,7 +118,14 @@ export default class MusicList {
                     innerText: '禁止',
                     onclick: event => {
                         event.stopPropagation()
-                        // BAN
+                        if (event.target.dataset.ban === 'ban') {
+                            event.target.dataset.ban = 'unban'
+                            event.target.innerText = '禁止'
+                        } else {
+                            event.target.dataset.ban = 'ban'
+                            event.target.innerText = '解禁'
+                            this.stop()
+                        }
                     }
                 })
             ]
