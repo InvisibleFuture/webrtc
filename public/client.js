@@ -136,7 +136,7 @@ export default class ClientList {
     send(name, data) {
         //console.log('广播数据:', data, '到通道:', name, '到所有客户端')
         this.clientlist.forEach(client => {
-            console.log('发送数据到客户端:', client.id, '通道:', name, '数据:', data)
+            console.log('发送数据到客户端:', client.id, client.name, '通道:', name, '数据:', data)
             client.channels.filter(ch => ch.label === name).forEach(ch => {
                 ch.send(data)
             })
