@@ -83,6 +83,10 @@ export default class MusicList {
                 })
             ]
         }))
+        // 执行回调函数
+        if (this.EventListeners['add']) {
+            this.EventListeners['add'](item)
+        }
     }
     remove(item) {
         this.ul.removeChild(this.ul.querySelector(`#${item.id}`))
