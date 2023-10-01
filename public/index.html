@@ -96,10 +96,11 @@
             onmessage: async (event, client) => {
                 const { type, id, channel, list } = JSON.parse(event.data)
                 if (type === 'get_music_list') {
-                    console.log(client.name, '请求音乐列表:', musicList.list)
+                    const ms = musicList.list.filter(item => item.arrayBuffer)
+                    console.log(client.name, '请求音乐列表:', ms)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
-                        list: musicList.list.map(({ id, name, size, type }) => ({ id, name, size, type }))
+                        list: ms.map(({ id, name, size, type }) => ({ id, name, size, type }))
                     }))
                     return
                 }
