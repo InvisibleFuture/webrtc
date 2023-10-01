@@ -16,7 +16,13 @@ export default class ClientList {
             websocket.onmessage = async event => {
                 const data = JSON.parse(event.data)
                 const webrtc_init = () => {
-                    const webrtc = new RTCPeerConnection()
+                    const webrtc = new RTCPeerConnection({
+                        iceServers: [{
+                            urls: 'turn:satori.love:3478',
+                            username: 'your-username',
+                            credential: 'your-password'
+                        }]
+                    })
                     webrtc.onicecandidate = event => {
                         if (event.candidate) {
                             websocket.send(JSON.stringify({

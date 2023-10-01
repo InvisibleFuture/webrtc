@@ -1,10 +1,39 @@
 import express from 'express'
 import expressWs from 'express-ws'
+import turn from 'node-turn'
 import { exec } from 'child_process'
+
+// 创建 TURN 服务器
+const turnServer = new turn({
+    authMech: 'long-term',
+    credentials: {
+        username: 'your-username',
+        password: 'your-password',
+    },
+    debugLevel: 'ALL',
+    listeningIps: [''],
+    listeningPort: 3478,
+    relayIps: [''],
+    relayPort: 3478,
+    verbose: true
+})
+
+// 启动 TURN 服务器
+turnServer.start(() => {
+    console.log('TURN server start:', turnServer)
+})
 
 const app = express()
 const wsInstance = expressWs(app)
 app.use(express.static('public'))
+app.use(express.json())
+app.use((req, res, next) => {
+    if (req.method === 'CONNECT') {
+        turnServer.handleConnect(req, res)
+    } else {
+        next()
+    }
+})
 
 // Websocket 处理 webRTC 信令
 app.ws('/webrtc/:channel', (ws, req) => {
