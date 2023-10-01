@@ -33,29 +33,29 @@ export default class ClientList {
                         }
                     }
                     webrtc.ondatachannel = ({ channel }) => {
-                        console.log('对方建立数据通道', channel.label)
+                        console.log('对方建立', channel.label, '数据通道')
                         const client = this.clientlist.find(x => x.id === data.id)
                         const option = this.channels[channel.label]
                         channel.onopen = event => {
-                            console.log('对方打开数据通道', channel.label)
+                            console.log('对方打开', channel.label, '数据通道')
                             if (option && option.onopen) {
                                 option.onopen(event, client)
                             }
                         }
                         channel.onmessage = event => {
-                            //console.log('对方发送数据消息', channel.label)
+                            console.log('对方发送', channel.label, '数据消息')
                             if (option && option.onmessage) {
                                 option.onmessage(event, client)
                             }
                         }
                         channel.onclose = event => {
-                            console.log('对方关闭数据通道', channel.label)
+                            console.log('对方关闭', channel.label, '数据通道')
                             if (option && option.onclose) {
                                 option.onclose(event, client)
                             }
                         }
                         channel.onerror = event => {
-                            console.log('对方数据通道发生错误', channel.label)
+                            console.log('对方通道', channel.label, '发生错误')
                             if (option && option.onerror) {
                                 option.onerror(event, client)
                             }
