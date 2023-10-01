@@ -10,10 +10,10 @@ const turnServer = new turn({
     //    username: 'your-username',
     //    password: 'your-password',
     //},
-    authMech: 'none',
+    //authMech: 'none',
     debugLevel: 'ALL',
-    listeningIps: ['0.0.0.0'],
-    listeningPort: 3478,
+    //listeningIps: ['0.0.0.0'],
+    //listeningPort: 3478,
     //relayIps: ['0.0.0.0'],
     //relayPort: 3478,
     //verbose: true
