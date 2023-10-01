@@ -97,17 +97,18 @@ export default class MusicList {
                     }
                 }),
                 Button({
-                    innerText: '移除',
+                    innerText: item.arrayBuffer ? '移除' : '喜欢',
                     onclick: event => {
                         event.stopPropagation()
-                        this.remove(item)
-                    }
-                }),
-                Button({
-                    innerText: '喜欢',
-                    onclick: event => {
-                        event.stopPropagation()
-                        this.like(item)
+                        if (item.arrayBuffer) {
+                            event.target.innerText = '喜欢'
+                            this.unlike(item)
+                            this.remove(item)
+                        } else {
+                            event.target.innerText = '移除'
+                            this.ul.querySelector(`#${item.id}`).classList.add('cache')
+                            this.like(item)
+                        }
                     }
                 }),
                 Button({
@@ -130,7 +131,7 @@ export default class MusicList {
     }
     async remove(item) {
         this.ul.querySelector(`#${item.id}`)?.remove()
-        this.stop() // 停止播放
+        if (this.playing) this.stop() // 停止播放
         this.event.onremove(item)
     }
     async load(item) {
@@ -149,6 +150,7 @@ export default class MusicList {
         this.audio.pause()
         this.audio.src = ''
         this.event.onstop(this.playing)
+        this.playing = null
     }
     async like(item) {
         if (!item.arrayBuffer) {
