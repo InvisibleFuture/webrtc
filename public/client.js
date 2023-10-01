@@ -19,8 +19,8 @@ export default class ClientList {
                     const webrtc = new RTCPeerConnection({
                         iceServers: [{
                             urls: 'turn:satori.love:3478',
-                            username: 'your-username',
-                            credential: await crypto.subtle.digest('SHA-1', new TextEncoder().encode('your-password')),
+                            username: '',   // your-username
+                            credential: '', // await crypto.subtle.digest('SHA-1', new TextEncoder().encode('your-password')),
                             //credentialType: 'password'
                         }]
                     })

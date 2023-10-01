@@ -34,7 +34,7 @@ export default class MusicList {
                 reader.readAsArrayBuffer(file)
             }
         }
-        //// 写入 css 样式到 head
+        // 写入 css 样式到 head
         const style = document.createElement('style')
         style.innerText = `
             ul.music-list > li {
