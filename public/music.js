@@ -154,10 +154,10 @@ export default class MusicList {
         if (!item.arrayBuffer) {
             await this.load(item)
         }
-        this.event.onlike(item)
+        this.event.onlike(item, this.list)
     }
     async unlike(item) {
-        this.event.onunlike(item)
+        this.event.onunlike(item, this.list)
     }
     async ban(item) {
         this.event.onban(item)

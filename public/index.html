@@ -36,18 +36,25 @@
             onstop: item => {
                 console.log('停止音乐', item.name)
             },
-            onlike: item => {
+            onlike: (item, list) => {
                 console.log('喜欢音乐', item)
                 if (item.arrayBuffer) {
                     database.add(item)
-                    // clientList.send('base', JSON.stringify({
-                    //     type: 'set_music_list',
-                    //     list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
-                    // }))
+                    clientList.send('base', JSON.stringify({
+                        type: 'set_music_list',
+                        list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
+                    }))
                 }
             },
-            onunlike: item => {
+            onunlike: (item, list) => {
                 console.log('取消喜欢', item)
+                if (item.arrayBuffer) {
+                    database.delete(item.id)
+                    clientList.send('base', JSON.stringify({
+                        type: 'set_music_list',
+                        list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
+                    }))
+                }
             },
             onban: item => {
                 console.log('禁止音乐', item)
