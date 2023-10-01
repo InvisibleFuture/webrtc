@@ -43,7 +43,7 @@ export default class ClientList {
                             }
                         }
                         channel.onmessage = event => {
-                            console.log('对方发送', channel.label, '数据消息')
+                            //console.log('对方发送', channel.label, '数据消息')
                             if (option && option.onmessage) {
                                 option.onmessage(event, client)
                             }

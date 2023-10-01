@@ -61,11 +61,11 @@ export default class MusicList {
         document.head.appendChild(style)
         document.body.appendChild(input)
     }
-    // 添加回调函数
-    on(name, callback) {
-        this.EventListeners[name] = callback
-    }
     add(item) {
+        // 如果ID已存在则不添加
+        if (this.list.find(i => i.id === item.id)) {
+            return
+        }
         // 将字节转换为可读的单位
         const bytesToSize = bytes => {
             if (bytes === 0) return '0 B'
@@ -163,10 +163,6 @@ export default class MusicList {
     async ban(item) {
         this.event.onban(item)
     }
-    //like(user_id, item_id) {
-    //    //if (!item.like) item.like = []
-    //    //item.like.push(user_id)
-    //}
     next() { }
     prev() { }
 }
