@@ -20,8 +20,7 @@ export default class ClientList {
                         iceServers: [{
                             urls: 'turn:satori.love:3478',
                             username: 'x-username',
-                            credential: 'x-password', //await crypto.subtle.digest('SHA-1', new TextEncoder().encode('your-password')),
-                            //credentialType: 'password'
+                            credential: 'x-password'
                         }]
                     })
                     webrtc.onicecandidate = event => {
@@ -151,6 +150,22 @@ export default class ClientList {
         if (this.EventListeners[name]) {
             this.EventListeners[name](...args)
         }
+    }
+    // 通过指定通道发送数据(单播)
+    sendto(id, name, data) {
+        //console.log('发送数据:', data, '到通道:', name, '到客户端:', id)
+        const client = this.clientlist.find(client => client.id === id)
+        if (!client) {
+            console.log('客户端不存在:', id)
+            return
+        }
+        client.channels.filter(ch => ch.label === name).forEach(async ch => {
+            // 等待 datachannel 打开(临时解决方案)
+            while (ch.readyState !== 'open') {
+                await new Promise(resolve => setTimeout(resolve, 100))
+            }
+            ch.send(data)
+        })
     }
     // 通过指定通道发送数据(广播)
     send(name, data) {

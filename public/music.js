@@ -1,7 +1,8 @@
 import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
-    constructor({ list = [], EventListeners = {} }) {
+    constructor({ list = [], EventListeners = {}, onplay, onstop, onadd, onremove, onlike, onban, onload }) {
+        this.event = { onplay, onstop, onadd, onremove, onlike, onban, onload }
         this.ul = List({})
         this.ul.classList.add('music-list')
         this.EventListeners = EventListeners
@@ -74,7 +75,6 @@ export default class MusicList {
             return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]
         }
         this.list.push(item)
-        console.log('添加音乐:', item)
         this.ul.appendChild(ListItem({
             id: item.id,
             classList: item.arrayBuffer ? ['cache'] : [],
@@ -125,55 +125,48 @@ export default class MusicList {
                 })
             ]
         }))
-        // 执行回调函数
-        if (this.EventListeners['add']) {
-            this.EventListeners['add'](item)
-        }
+        this.event.onadd(item, this.list)
     }
-    remove(item) {
+    async remove(item) {
         this.ul.querySelector(`#${item.id}`)?.remove()
         this.stop() // 停止播放
-        // 执行回调函数
-        if (this.EventListeners['remove']) {
-            this.EventListeners['remove'](item)
-        }
+        this.event.onremove(item)
     }
     async load(item) {
-        // 执行回调函数(应当异步)
-        if (this.EventListeners['load']) {
-            await this.EventListeners['load'](item)
-        }
+        await this.event.onload(item)
     }
     async play(item) {
         if (!item.arrayBuffer) {
-            console.log('等待载入缓存:', item)
             await this.load(item)
-            console.log('缓存载入完成:', item)
         }
+        this.playing = item
         this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
         this.audio.play()
-        // 执行回调函数
-        if (this.EventListeners['play']) {
-            this.EventListeners['play'](item)
-        }
+        this.event.onplay(item)
     }
-    stop() {
+    async stop() {
         this.audio.pause()
         this.audio.src = ''
-        // 执行回调函数
-        if (this.EventListeners['stop']) {
-            this.EventListeners['stop']()
-        }
+        this.event.onstop(this.playing)
     }
-    like(item) {
+    async like(item) {
         if (!item.arrayBuffer) {
-            console.log('载入缓存:', item)
-            return
-        } else {
-            console.log('移除缓存:', item)
+            await this.load(item)
             return
         }
+        if (item.arrayBuffer) {
+            return
+        }
+        // TODO: 添加喜欢和取消喜欢
+        this.event.onlike(item)
     }
+    async ban(item) {
+        this.event.onban(item)
+    }
+    //like(user_id, item_id) {
+    //    //if (!item.like) item.like = []
+    //    //item.like.push(user_id)
+    //}
     next() { }
     prev() { }
 }
