@@ -5,18 +5,7 @@ import { exec } from 'child_process'
 
 // 创建 TURN 服务器
 const turnServer = new turn({
-    //authMech: 'long-term',
-    //credentials: {
-    //    username: 'your-username',
-    //    password: 'your-password',
-    //},
-    //authMech: 'none',
-    debugLevel: 'ALL',
-    //listeningIps: ['0.0.0.0'],
-    //listeningPort: 3478,
-    //relayIps: ['0.0.0.0'],
-    //relayPort: 3478,
-    //verbose: true
+    debugLevel: 'ALL'
 })
 
 // 启动 TURN 服务器
