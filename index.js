@@ -11,9 +11,9 @@ const turnServer = new turn({
         password: 'your-password',
     },
     debugLevel: 'ALL',
-    listeningIps: [''],
+    listeningIps: ['0.0.0.0'],
     listeningPort: 3478,
-    relayIps: [''],
+    relayIps: ['0.0.0.0'],
     relayPort: 3478,
     verbose: true
 })

@@ -114,13 +114,12 @@ export default class ClientList {
                 }
                 console.log('收到未知数据:', data)
             }
-            websocket.onclose = event => {
+            websocket.onclose = async event => {
                 console.log('WebSocket 断线重连...')
-                setTimeout(() => {
-                    //this.websocket = linkStart()
-                    // 调试模式: 直接刷新页面重载
-                    window.location.reload()
-                }, 3000)
+                await new Promise(resolve => setTimeout(resolve, 10000))
+                // this.websocket = linkStart()
+                // 调试模式: 直接刷新页面重载
+                window.location.reload()
             }
             return websocket
         }
