@@ -1,8 +1,8 @@
 import { Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
-    constructor({ list = [], EventListeners = {}, onplay, onstop, onadd, onremove, onlike, onban, onload }) {
-        this.event = { onplay, onstop, onadd, onremove, onlike, onban, onload }
+    constructor({ list = [], EventListeners = {}, onplay, onstop, onadd, onremove, onlike, onunlike, onban, onload }) {
+        this.event = { onplay, onstop, onadd, onremove, onlike, onunlike, onban, onload }
         this.ul = List({})
         this.ul.classList.add('music-list')
         this.EventListeners = EventListeners
@@ -30,7 +30,8 @@ export default class MusicList {
                 const reader = new FileReader()
                 reader.onload = async event => {
                     const arrayBuffer = event.target.result
-                    this.add({ id, name, size, type, arrayBuffer })
+                    this.add({ id, name, size, type, arrayBuffer })  // 添加到列表(默认并不存储)
+                    this.like({ id, name, size, type, arrayBuffer }) // 本地缓存的必要条件是喜欢
                 }
                 reader.readAsArrayBuffer(file)
             }
@@ -152,13 +153,11 @@ export default class MusicList {
     async like(item) {
         if (!item.arrayBuffer) {
             await this.load(item)
-            return
         }
-        if (item.arrayBuffer) {
-            return
-        }
-        // TODO: 添加喜欢和取消喜欢
         this.event.onlike(item)
+    }
+    async unlike(item) {
+        this.event.onunlike(item)
     }
     async ban(item) {
         this.event.onban(item)
