@@ -56,7 +56,11 @@ export default class MusicList {
             ul.music-list > li > button {
                 margin-left: 10px;
                 border: none;
+                border-radius: 1em;
                 cursor: pointer;
+                font-size: .5rem;
+                padding: 0 .5rem;
+                color: #555555;
             }
             ul.music-list > li > button:hover {
                 background-color: #ccc;
@@ -83,50 +87,31 @@ export default class MusicList {
             id: item.id,
             classList: item.arrayBuffer ? ['cache'] : [],
             innerText: `${item.name} - ${bytesToSize(item.size)}`,
+            onclick: event => {
+                event.stopPropagation()
+                if (event.target.dataset.play === 'play') {
+                    event.target.dataset.play = 'stop'
+                    event.target.classList.remove('play')
+                    this.stop()
+                } else {
+                    event.target.dataset.play = 'play'
+                    this.ul.querySelectorAll('li.play').forEach(li => li.classList.remove('play'))
+                    event.target.classList.add('play')
+                    this.play(item)
+                }
+            },
             children: [
                 Button({
-                    innerText: '播放',
-                    onclick: event => {
-                        event.stopPropagation()
-                        if (event.target.dataset.play === 'play') {
-                            event.target.dataset.play = 'stop'
-                            event.target.innerText = '播放'
-                            this.ul.querySelector(`#${item.id}`).classList.remove('play')
-                            this.stop()
-                        } else {
-                            event.target.dataset.play = 'play'
-                            event.target.innerText = '停止'
-                            this.ul.querySelectorAll('li.play').forEach(li => li.classList.remove('play'))
-                            this.ul.querySelector(`#${item.id}`).classList.add('play')
-                            this.play(item)
-                        }
-                    }
-                }),
-                Button({
-                    innerText: item.arrayBuffer ? '移除' : '喜欢',
+                    innerText: item.arrayBuffer ? '移除' : '缓存',
                     onclick: event => {
                         event.stopPropagation()
                         if (item.arrayBuffer) {
-                            event.target.innerText = '喜欢'
+                            event.target.innerText = '缓存'
                             this.unlike(item)
                         } else {
                             event.target.innerText = '移除'
                             this.ul.querySelector(`#${item.id}`).classList.add('cache')
                             this.like(item)
-                        }
-                    }
-                }),
-                Button({
-                    innerText: '禁止',
-                    onclick: event => {
-                        event.stopPropagation()
-                        if (event.target.dataset.ban === 'ban') {
-                            event.target.dataset.ban = 'unban'
-                            event.target.innerText = '禁止'
-                        } else {
-                            event.target.dataset.ban = 'ban'
-                            event.target.innerText = '解禁'
-                            this.stop()
                         }
                     }
                 })
