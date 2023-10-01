@@ -42,6 +42,9 @@ export default class MusicList {
             ul.music-list > li {
                 cursor: pointer;
             }
+            ul.music-list > li.play {
+                color: #02be08;
+            }
             ul.music-list > li.cache::marker {
                 color: #02be08;
                 font-size: 1em;
@@ -88,10 +91,13 @@ export default class MusicList {
                         if (event.target.dataset.play === 'play') {
                             event.target.dataset.play = 'stop'
                             event.target.innerText = '播放'
+                            this.ul.querySelector(`#${item.id}`).classList.remove('play')
                             this.stop()
                         } else {
                             event.target.dataset.play = 'play'
                             event.target.innerText = '停止'
+                            this.ul.querySelectorAll('li.play').forEach(li => li.classList.remove('play'))
+                            this.ul.querySelector(`#${item.id}`).classList.add('play')
                             this.play(item)
                         }
                     }
