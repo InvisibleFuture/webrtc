@@ -103,7 +103,6 @@ export default class MusicList {
                         if (item.arrayBuffer) {
                             event.target.innerText = '喜欢'
                             this.unlike(item)
-                            this.remove(item)
                         } else {
                             event.target.innerText = '移除'
                             this.ul.querySelector(`#${item.id}`).classList.add('cache')
@@ -159,6 +158,7 @@ export default class MusicList {
         this.event.onlike(item, this.list)
     }
     async unlike(item) {
+        this.remove(item)
         this.event.onunlike(item, this.list)
     }
     async ban(item) {
