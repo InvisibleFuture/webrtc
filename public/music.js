@@ -40,6 +40,14 @@ export default class MusicList {
             ul.music-list > li {
                 cursor: pointer;
             }
+            ul.music-list > li.cache::marker {
+                color: #02be08;
+                font-size: 1em;
+                contentx: '⚡';
+            }
+            ul.music-list > li.disable {
+                color: #999999;
+            }
             ul.music-list > li > button {
                 margin-left: 10px;
                 border: none;
@@ -66,8 +74,10 @@ export default class MusicList {
             return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]
         }
         this.list.push(item)
+        console.log('添加音乐:', item)
         this.ul.appendChild(ListItem({
             id: item.id,
+            classList: item.arrayBuffer ? ['cache'] : [],
             innerText: `${item.name} - ${bytesToSize(item.size)}`,
             children: [
                 Button({

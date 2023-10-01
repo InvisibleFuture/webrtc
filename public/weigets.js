@@ -11,8 +11,9 @@ export function List({ children = [] }) {
     return ul
 }
 
-export function ListItem({ innerText, onclick, id, children = [], dataset }) {
+export function ListItem({ innerText, onclick, id, children = [], dataset, classList=[] }) {
     const li = document.createElement('li')
+    classList.forEach(item => li.classList.add(item))
     li.innerText = innerText
     li.onclick = onclick
     li.id = id
