@@ -107,7 +107,7 @@ export default class ClientList {
                     return
                 }
                 if (data.type === 'candidate') {
-                    console.log('收到 candidate 并将其添加到远程端', data, this.clientlist)
+                    console.log(data.name, '发来 candidate 候选通道')
                     const pc = this.clientlist.find(client => client.id === data.id).webrtc
                     await pc.addIceCandidate(data.candidate)
                     return
