@@ -14,9 +14,9 @@ const turnServer = new turn({
     debugLevel: 'ALL',
     listeningIps: ['0.0.0.0'],
     listeningPort: 3478,
-    relayIps: ['0.0.0.0'],
-    relayPort: 3478,
-    verbose: true
+    //relayIps: ['0.0.0.0'],
+    //relayPort: 3478,
+    //verbose: true
 })
 
 // 启动 TURN 服务器
