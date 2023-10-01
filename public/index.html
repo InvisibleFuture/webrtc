@@ -87,7 +87,13 @@
                             }
                         }
                     })
-                    clientList.send('base', JSON.stringify({ type: 'get_music_data', id: item.id, channel: `music-data-${item.id}` }))
+                    console.log('TODO: 重复请求改为指向目标主机(需要主机各自保存列表/收到列表时)')
+                    const client = clientList.clientlist.find(client => {
+                        return client.musicList.find(x => x.id === item.id)
+                    })
+                    clientList.sendto(client.id, 'base', JSON.stringify({
+                        type: 'get_music_data', id: item.id, channel: `music-data-${item.id}`
+                    }))
                 })
             }
         })
@@ -124,12 +130,9 @@
                 }
                 if (type === 'set_music_list') {
                     console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
-                    // 将音乐列表添加到本地
+                    console.log('将列表保存到本机记录:', client)
+                    client.musicList = list
                     list.forEach(item => musicList.add(item))
-                    //const ids = musicList.list.map(item => item.id)
-                    //list.filter(item => !ids.includes(item.id)).forEach(item => {
-                    //    musicList.add(item)
-                    //})
                     return
                 }
                 if (type === 'get_music_data') {

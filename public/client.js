@@ -153,7 +153,6 @@ export default class ClientList {
     }
     // 通过指定通道发送数据(单播)
     sendto(id, name, data) {
-        //console.log('发送数据:', data, '到通道:', name, '到客户端:', id)
         const client = this.clientlist.find(client => client.id === id)
         if (!client) {
             console.log('客户端不存在:', id)
@@ -169,9 +168,7 @@ export default class ClientList {
     }
     // 通过指定通道发送数据(广播)
     send(name, data) {
-        //console.log('广播数据:', data, '到通道:', name, '到所有客户端')
         this.clientlist.forEach(client => {
-            //console.log('发送数据到客户端:', client.id, client.name, '通道:', name, '数据:', data)
             client.channels.filter(ch => ch.label === name).forEach(async ch => {
                 // 等待 datachannel 打开(临时解决方案)
                 while (ch.readyState !== 'open') {
