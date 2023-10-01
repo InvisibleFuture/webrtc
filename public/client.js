@@ -15,12 +15,12 @@ export default class ClientList {
             const websocket = new WebSocket(`${protocol}://${host}/webrtc/music?name=${username}`)
             websocket.onmessage = async event => {
                 const data = JSON.parse(event.data)
-                const webrtc_init = () => {
+                const webrtc_init = async () => {
                     const webrtc = new RTCPeerConnection({
                         iceServers: [{
                             urls: 'turn:satori.love:3478',
-                            username: 'your-username',
-                            credential: 'your-password',
+                            username: '',   // 'your-username',
+                            credential: '', // await crypto.subtle.digest('SHA-1', new TextEncoder().encode('your-password')),
                             credentialType: 'password'
                         }]
                     })
@@ -73,7 +73,7 @@ export default class ClientList {
                 }
                 if (data.type === 'list') {
                     //console.log('取得在线对端列表:', data)
-                    const { webrtc, channels } = webrtc_init()
+                    const { webrtc, channels } = await webrtc_init()
                     //console.log('发送给对方 offer')
                     const offer = await webrtc.createOffer()
                     await webrtc.setLocalDescription(offer)
@@ -92,7 +92,7 @@ export default class ClientList {
                 }
                 if (data.type === 'offer') {
                     //console.log('收到对方 offer', data)
-                    const { webrtc, channels } = webrtc_init()
+                    const { webrtc, channels } = await webrtc_init()
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
                     //console.log('发送给对方 answer')
                     await webrtc.setRemoteDescription(data.offer)
