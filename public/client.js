@@ -18,7 +18,7 @@ export default class ClientList {
                 const webrtc_init = () => {
                     const webrtc = new RTCPeerConnection({
                         iceServers: [{
-                            urls: 'turns:satori.love:3478',
+                            urls: 'turn:satori.love:3478',
                             username: 'your-username',
                             credential: 'your-password',
                             credentialType: 'password'
