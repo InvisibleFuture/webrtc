@@ -61,7 +61,8 @@ export default class ClientList {
                         const client = this.clientlist.find(x => x.id === data.id)
                         const option = this.channels[channel.label]
                         channel.onopen = event => {
-                            console.log(data.name, '打开', channel.label, '数据通道')
+                            console.log('对方打开', channel.label, '数据通道')
+                            console.group('收到音乐数据')
                             if (option && option.onopen) {
                                 option.onopen(event, client)
                             }
@@ -73,7 +74,8 @@ export default class ClientList {
                             }
                         }
                         channel.onclose = event => {
-                            console.log(data.name, '关闭', channel.label, '数据通道')
+                            console.groupEnd('收到音乐数据')
+                            console.log('对方关闭', channel.label, '数据通道')
                             if (option && option.onclose) {
                                 option.onclose(event, client)
                             }
