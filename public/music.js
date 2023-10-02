@@ -1,4 +1,4 @@
-import { Text, Button, List, ListItem } from './weigets.js'
+import { Span, Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
     constructor({ list = [], EventListeners = {}, onplay, onstop, onadd, onremove, onlike, onunlike, onban, onload }) {
@@ -88,8 +88,8 @@ export default class MusicList {
             id: item.id,
             classList: item.arrayBuffer ? ['cache'] : [],
             children: [
-                Text({
-                    innerText: `${item.name} - ${bytesToSize(item.size)}`,
+                Span({
+                    textContent: `${item.name} - ${bytesToSize(item.size)}`,
                     onclick: event => {
                         event.stopPropagation()
                         if (!this.audio.paused) {
@@ -103,14 +103,14 @@ export default class MusicList {
                     }
                 }),
                 Button({
-                    innerText: item.arrayBuffer ? '移除' : '缓存',
+                    textContent: item.arrayBuffer ? '移除' : '缓存',
                     onclick: event => {
                         event.stopPropagation()
                         if (item.arrayBuffer) {
-                            event.target.innerText = '缓存'
+                            event.target.textContent = '缓存'
                             this.unlike(item)
                         } else {
-                            event.target.innerText = '移除'
+                            event.target.textContent = '移除'
                             this.ul.querySelector(`#${item.id}`).classList.add('cache')
                             this.like(item)
                         }
