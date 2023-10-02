@@ -167,7 +167,9 @@ export default class ClientList {
             while (ch.readyState !== 'open') {
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
-            ch.send(data)
+            console.log(ch.label, '通道已经打开, 开始发送数据')
+            const rest = ch.send(data)
+            console.log(ch.label, '通道发送已结束', rest)
         })
     }
     // 通过指定通道发送数据(广播)
