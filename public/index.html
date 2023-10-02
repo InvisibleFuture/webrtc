@@ -126,10 +126,14 @@
                             }
                         }
                     })
-                    console.log('TODO: 重复请求改为指向目标主机(需要主机各自保存列表/收到列表时)')
                     const client = clientList.clientlist.find(client => {
                         return client.musicList.find(x => x.id === item.id)
                     })
+                    console.log('向', client.name, '请求音乐数据')
+
+                    const count = Math.ceil(item.size / CHUNK_SIZE)
+                    console.log('需要接收', count, '个分片')
+
                     clientList.sendto(client.id, 'base', JSON.stringify({
                         type: 'get_music_data', id: item.id, channel: `music-data-${item.id}`
                     }))
