@@ -126,6 +126,7 @@ export default class MusicList {
     async remove(item) {
         this.ul.querySelector(`#${item.id}`)?.remove()
         if (!this.audio.paused) this.stop() // 停止播放
+        this.list = this.list.filter(i => i.id !== item.id)
         this.event.onremove(item)
     }
     async load(item) {

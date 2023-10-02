@@ -44,17 +44,19 @@
                 console.log(client.name, '离开频道', client)
                 // 从列表中移除未缓存的此用户的音乐, 但可能多人都有此音乐且未缓存
                 // 因此每条音乐都要检查是否有其他用户也有此音乐, 如果有则不移除
-                //musicList.list.filter(item => !item.arrayBuffer).forEach(item => {
-                //    const client = clientList.clientlist.find(client => {
-                //        return client.musicList.find(x => x.id === item.id)
-                //    })
-                //    if (!client) {
-                //        console.log('没有用户存留此音乐了, 移除记录', item.name)
-                //        musicList.remove(item)
-                //    } else {
-                //        console.log(client.name, '中还有此音乐, 保留记录', item.name)
-                //    }
-                //})
+                const 此用户音乐 = client.musicList.map(item => item.id)
+                const 无数据音乐 = musicList.list.filter(item => !item.arrayBuffer)
+                无数据音乐.forEach(item => {
+                    const client = clientList.clientlist.find(client => {
+                        return client.musicList.find(x => x.id === item.id)
+                    })
+                    if (!client) {
+                        console.log('没有用户存留此音乐了, 移除记录', item.name)
+                        musicList.remove(item)
+                    } else {
+                        console.log(client.name, '中还有此音乐, 保留记录', item.name)
+                    }
+                })
 
             }
         })
