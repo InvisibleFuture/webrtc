@@ -94,7 +94,7 @@ export default class ClientList {
                             console.log('需要添加新的 candidate')
                             // 添加新的 candidate
                         } else if (webrtc.iceConnectionState === 'connected' || webrtc.iceConnectionState === 'completed') {
-                            console.log('WebRTC 连接已经建立成功');
+                            console.log('WebRTC 连接已经建立成功')
                         }
                     }
                     const channels = Object.entries(this.channels).map(([name, callback]) => {
@@ -107,7 +107,7 @@ export default class ClientList {
                     //console.log('取得在线对端列表:', data)
                     const { webrtc, channels } = await webrtc_init()
                     //console.log('发送给对方 offer')
-                    const offer = await webrtc.createOffer()
+                    const offer = await webrtc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
                     await webrtc.setLocalDescription(offer)
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
                     websocket.send(JSON.stringify({ type: 'offer', id: data.id, offer }))
