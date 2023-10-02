@@ -52,12 +52,7 @@
                     const client = clientList.clientlist.find(client => {
                         return client.musicList.find(x => x.id === item.id)
                     })
-                    if (!client) {
-                        console.log('没有用户存留此音乐了, 移除记录', item.name)
-                        musicList.remove(item)
-                    } else {
-                        console.log(client.name, '中还有此音乐, 保留记录', item.name)
-                    }
+                    if (!client) musicList.remove(item)
                 })
 
             }
@@ -73,7 +68,7 @@
                 console.log('停止音乐', item?.name)
             },
             onlike: (item, list) => {
-                console.log('喜欢音乐', item)
+                console.log('喜欢音乐', item.name)
                 if (item.arrayBuffer) {
                     database.add(item)
                     clientList.send('base', JSON.stringify({
@@ -83,7 +78,7 @@
                 }
             },
             onunlike: (item, list) => {
-                console.log('取消喜欢', item)
+                console.log('取消喜欢', item.name)
                 if (item.arrayBuffer) {
                     database.delete(item.id)
                     clientList.send('base', JSON.stringify({
@@ -93,20 +88,20 @@
                 }
             },
             onban: item => {
-                console.log('禁止音乐', item)
+                console.log('禁止音乐', item.name)
             },
             onunban: item => {
-                console.log('解禁音乐', item)
+                console.log('解禁音乐', item.name)
             },
             onremove: item => {
-                console.log('移除音乐', item)
+                console.log('移除音乐', item.name)
                 database.delete(item.id)
             },
             onadd: (item, list) => {
                 console.log('添加音乐', item.name)
             },
             onupdate: item => {
-                console.log('更新音乐', item)
+                console.log('更新音乐', item.name)
                 database.put(item)
             },
             onerror: error => {
