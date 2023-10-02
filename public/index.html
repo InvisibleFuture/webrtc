@@ -196,6 +196,12 @@
                     return
                 }
                 console.log('未知类型:', type)
+            },
+            onclose: event => {
+                console.log('关闭信道', event.target.label)
+            },
+            onerror: error => {
+                console.log('信道错误', error)
             }
         })
 
