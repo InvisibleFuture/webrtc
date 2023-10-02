@@ -131,8 +131,8 @@
                     })
                     console.log('向', client.name, '请求音乐数据')
 
-                    const count = Math.ceil(item.size / CHUNK_SIZE)
-                    console.log('需要接收', count, '个分片')
+                    const c = Math.ceil(item.size / CHUNK_SIZE)
+                    console.log('需要接收', c, '个分片')
 
                     clientList.sendto(client.id, 'base', JSON.stringify({
                         type: 'get_music_data', id: item.id, channel: `music-data-${item.id}`
