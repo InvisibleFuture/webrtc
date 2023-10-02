@@ -114,8 +114,8 @@
                     var count = 0
                     clientList.setChannel(`music-data-${item.id}`, {
                         onmessage: async (event, client) => {
-                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
                             buffer = appendBuffer(buffer, event.data)
+                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
                             count++
                             if (buffer.byteLength >= item.size) {
                                 console.log('音乐数据接收完毕')
