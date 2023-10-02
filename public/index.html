@@ -153,7 +153,7 @@
                 if (type === 'get_music_list') {
                     const ms = musicList.list.filter(item => item.arrayBuffer)
                     console.log(client.name, '请求音乐列表:', ms)
-                    clientList.send('base', JSON.stringify({
+                    clientList.sendto(client.id, 'base', JSON.stringify({
                         type: 'set_music_list',
                         list: ms.map(({ id, name, size, type }) => ({ id, name, size, type }))
                     }))
