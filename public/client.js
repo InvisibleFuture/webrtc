@@ -24,15 +24,6 @@ export default class ClientList {
                             credential: 'x-password'
                         }]
                     })
-                    webrtc.onicecandidate = event => {
-                        if (event.candidate) {
-                            websocket.send(JSON.stringify({
-                                type: 'candidate',
-                                id: data.id,
-                                candidate: event.candidate
-                            }))
-                        }
-                    }
                     webrtc.ondatachannel = ({ channel }) => {
                         console.log('对方建立', channel.label, '数据通道')
                         const client = this.clientlist.find(x => x.id === data.id)
@@ -62,15 +53,21 @@ export default class ClientList {
                             }
                         }
                     }
+                    webrtc.onicecandidate = event => {
+                        if (event.candidate) {
+                            websocket.send(JSON.stringify({
+                                type: 'candidate',
+                                id: data.id,
+                                candidate: event.candidate
+                            }))
+                        }
+                    }
                     webrtc.oniceconnectionstatechange = async event => {
-                        if (webrtc.iceConnectionState === 'disconnected') {
-                            console.log(data.name, 'WebRTC ICE 连接断开 disconnected')
-                            if (this.clientlist.find(x => x.id === data.id)) {
-                                console.log(data.name, '仍在线, 尝试重连...')
-                                const offer = await webrtc.createOffer()
-                                await webrtc.setLocalDescription(offer)
-                                websocket.send(JSON.stringify({ type: 'offer', id: data.id, offer }))
-                            }
+                        if (webrtc.iceConnectionState === 'disconnected' || webrtc.iceConnectionState === 'failed') {
+                            console.log('需要添加新的 candidate')
+                            // 添加新的 candidate
+                        } else if (webrtc.iceConnectionState === 'connected' || webrtc.iceConnectionState === 'completed') {
+                            console.log('WebRTC 连接已经建立成功');
                         }
                     }
                     const channels = Object.entries(this.channels).map(([name, callback]) => {
