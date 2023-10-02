@@ -122,7 +122,7 @@ export default class MusicList {
     }
     async remove(item) {
         this.ul.querySelector(`#${item.id}`)?.remove()
-        if (this.audio.paused) this.stop() // 停止播放
+        if (!this.audio.paused) this.stop() // 停止播放
         this.event.onremove(item)
     }
     async load(item) {
