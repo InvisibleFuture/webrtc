@@ -115,7 +115,7 @@
                     clientList.setChannel(`music-data-${item.id}`, {
                         onmessage: async (event, client) => {
                             buffer = appendBuffer(buffer, event.data)
-                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
+                            console.log('收到音乐数据 chunk', count, buffer.byteLength) 
                             count++
                             if (buffer.byteLength >= item.size) {
                                 console.log('音乐数据接收完毕')
@@ -162,7 +162,9 @@
                     console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
                     console.log('将列表保存到本机记录:', client)
                     client.musicList = list
+                    console.group('添加音乐')
                     client.musicList.forEach(music => musicList.add(music))
+                    console.groupEnd('添加音乐')
                     return
                 }
                 if (type === 'get_music_data') {
