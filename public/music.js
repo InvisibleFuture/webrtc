@@ -1,4 +1,4 @@
-import { Button, List, ListItem } from './weigets.js'
+import { Text, Button, List, ListItem } from './weigets.js'
 
 export default class MusicList {
     constructor({ list = [], EventListeners = {}, onplay, onstop, onadd, onremove, onlike, onunlike, onban, onload }) {
@@ -39,10 +39,10 @@ export default class MusicList {
         // 写入 css 样式到 head
         const style = document.createElement('style')
         style.innerText = `
-            ul.music-list > li {
+            ul.music-list > li > span {
                 cursor: pointer;
             }
-            ul.music-list > li.play {
+            ul.music-list > li > span.play {
                 color: #02be08;
             }
             ul.music-list > li.cache::marker {
@@ -86,21 +86,21 @@ export default class MusicList {
         this.ul.appendChild(ListItem({
             id: item.id,
             classList: item.arrayBuffer ? ['cache'] : [],
-            innerText: `${item.name} - ${bytesToSize(item.size)}`,
-            onclick: event => {
-                event.stopPropagation()
-                if (event.target.dataset.play === 'play') {
-                    event.target.dataset.play = 'stop'
-                    event.target.classList.remove('play')
-                    this.stop()
-                } else {
-                    event.target.dataset.play = 'play'
-                    this.ul.querySelectorAll('li.play').forEach(li => li.classList.remove('play'))
-                    event.target.classList.add('play')
-                    this.play(item)
-                }
-            },
             children: [
+                Text({
+                    innerText: `${item.name} - ${bytesToSize(item.size)}`,
+                    onclick: event => {
+                        event.stopPropagation()
+                        if (!this.audio.paused) {
+                            event.target.classList.remove('play')
+                            this.stop(item)
+                        } else {
+                            this.ul.querySelectorAll('li span.play').forEach(span => span.classList.remove('play'))
+                            event.target.classList.add('play')
+                            this.play(item)
+                        }
+                    }
+                }),
                 Button({
                     innerText: item.arrayBuffer ? '移除' : '缓存',
                     onclick: event => {
@@ -121,7 +121,7 @@ export default class MusicList {
     }
     async remove(item) {
         this.ul.querySelector(`#${item.id}`)?.remove()
-        if (this.playing) this.stop() // 停止播放
+        if (this.audio.paused) this.stop() // 停止播放
         this.event.onremove(item)
     }
     async load(item) {

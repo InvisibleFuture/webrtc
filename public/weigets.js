@@ -11,24 +11,25 @@ export function List({ children = [] }) {
     return ul
 }
 
-export function ListItem({ innerText, onclick, id, children = [], dataset, classList=[] }) {
-    const li = document.createElement('li')
-    classList.forEach(item => li.classList.add(item))
-    li.innerText = innerText
-    li.onclick = onclick
-    li.id = id
-    dataset && Object.keys(dataset).forEach(key => li.dataset[key] = dataset[key])
-    children.forEach(child => li.appendChild(child))
-    return li
+export function ListItem({ innerText, onclick, children = [], dataset, classList = [], ...attributes }) {
+    const element = document.createElement('li')
+    for (const key in attributes) {
+        element.setAttribute(key, attributes[key])
+    }
+    classList.forEach(item => element.classList.add(item))
+    if (innerText) element.innerText = innerText
+    if (onclick) element.onclick = onclick
+    if (dataset) Object.keys(dataset).forEach(key => element.dataset[key] = dataset[key])
+    if (children) children.forEach(child => element.appendChild(child))
+    return element
 }
 
-export function Text({ innerText, onclick, id, children = [], dataset, classList=[] }) {
-    const span = document.createElement('span')
-    classList.forEach(item => span.classList.add(item))
-    span.innerText = innerText
-    span.onclick = onclick
-    span.id = id
-    dataset && Object.keys(dataset).forEach(key => span.dataset[key] = dataset[key])
-    children.forEach(child => span.appendChild(child))
-    return span
+export function Text({ innerText, onclick, children, dataset, classList, ...attributes }) {
+    const element = document.createElement('span')
+    if (classList) classList.forEach(item => element.classList.add(item))
+    if (innerText) element.innerText = innerText
+    if (onclick) element.onclick = onclick
+    if (dataset) Object.keys(dataset).forEach(key => element.dataset[key] = dataset[key])
+    if (children) children.forEach(child => element.appendChild(child))
+    return element
 }
