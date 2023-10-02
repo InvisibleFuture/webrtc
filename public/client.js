@@ -18,11 +18,33 @@ export default class ClientList {
                 const data = JSON.parse(event.data)
                 const webrtc_init = async () => {
                     const webrtc = new RTCPeerConnection({
-                        iceServers: [{
-                            urls: 'turn:satori.love:3478?transport=udp',
-                            username: 'x-username',
-                            credential: 'x-password'
-                        }],
+                        iceServers: [
+                            {
+                                urls: 'turn:satori.love:3478?transport=udp',
+                                username: 'x-username',
+                                credential: 'x-password'
+                            },
+                            {
+                                urls: [
+                                    'stun:stun.minisipserver.com',
+                                    'stun:stun.zoiper.com',
+                                    'stun:stun.voipbuster.com',
+                                    'stun:stun.sipgate.net',
+                                    'stun:stun.schlund.de',
+                                    'stun:stun.voipstunt.com',
+                                    'stun:stun.1und1.de',
+                                    'stun:stun.gmx.net',
+                                    'stun:stun.callwithus.com',
+                                    'stun:stun.internetcalls.com',
+                                    'stun:stun.voip.aebc.com',
+                                    'stun:stun.internetcalls.com',
+                                    'stun:stun.callwithus.com',
+                                    'stun:stun.gmx.net',
+                                    'stun:stun.1und1.de',
+                                    'stun:stun.voxgratia.org',
+                                ],
+                            }
+                        ],
                         iceCandidatePoolSize: 10,  // 限制 ICE 候选者的数量
                         iceTransportPolicy: 'all', // 使用所有可用的候选者
                         bundlePolicy: 'balanced',  // 每種類型的內容建立一個單獨的傳輸
@@ -65,6 +87,8 @@ export default class ClientList {
                             }))
                         }
                     }
+                    webrtc.getReceivers
+                    webrtc.getTransceivers
                     webrtc.oniceconnectionstatechange = async event => {
                         if (webrtc.iceConnectionState === 'disconnected' || webrtc.iceConnectionState === 'failed') {
                             console.log('需要添加新的 candidate')
