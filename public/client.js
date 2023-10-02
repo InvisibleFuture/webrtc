@@ -19,10 +19,13 @@ export default class ClientList {
                 const webrtc_init = async () => {
                     const webrtc = new RTCPeerConnection({
                         iceServers: [{
-                            urls: 'turn:satori.love:3478',
+                            urls: 'turn:satori.love:3478?transport=udp',
                             username: 'x-username',
                             credential: 'x-password'
-                        }]
+                        }],
+                        iceCandidatePoolSize: 10,  // 限制 ICE 候选者的数量
+                        iceTransportPolicy: 'all', // 使用所有可用的候选者
+                        bundlePolicy: 'balanced',  // 每種類型的內容建立一個單獨的傳輸
                     })
                     webrtc.ondatachannel = ({ channel }) => {
                         console.log('对方建立', channel.label, '数据通道')
@@ -108,14 +111,14 @@ export default class ClientList {
                 }
                 if (data.type === 'answer') {
                     //console.log('收到对方 answer', data)
-                    const pc = this.clientlist.find(client => client.id === data.id).webrtc
-                    await pc.setRemoteDescription(data.answer)
+                    const webrtc = this.clientlist.find(client => client.id === data.id).webrtc
+                    await webrtc.setRemoteDescription(data.answer)
                     return
                 }
                 if (data.type === 'candidate') {
                     console.log(data.name, '发来 candidate 候选通道')
-                    const pc = this.clientlist.find(client => client.id === data.id).webrtc
-                    await pc.addIceCandidate(data.candidate)
+                    const webrtc = this.clientlist.find(client => client.id === data.id).webrtc
+                    await webrtc.addIceCandidate(data.candidate)
                     return
                 }
                 console.log('收到未知数据:', data)
