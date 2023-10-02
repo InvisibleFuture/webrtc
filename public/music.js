@@ -58,6 +58,7 @@ export default class MusicList {
                 border: none;
                 border-radius: 1em;
                 cursor: pointer;
+                user-select: none;
                 font-size: .5rem;
                 padding: 0 .5rem;
                 color: #555555;
