@@ -42,7 +42,7 @@ export default class MusicList {
             ul.music-list > li > span {
                 cursor: pointer;
             }
-            ul.music-list > li > span.play {
+            ul.music-list > li.play > span {
                 color: #02be08;
             }
             ul.music-list > li.cache::marker {
@@ -92,12 +92,15 @@ export default class MusicList {
                     textContent: `${item.name} - ${bytesToSize(item.size)}`,
                     onclick: event => {
                         event.stopPropagation()
-                        if (!this.audio.paused) {
-                            event.target.classList.remove('play')
+                        const li = event.target.parentElement  // ListItem
+                        const ul = li.parentElement            // List
+                        const list = Array.from(ul.children)   // ListItems
+                        list.forEach(li => li.classList.remove('play'))
+                        if (!this.audio.paused && this.playing === item) {
+                            li.classList.remove('play')
                             this.stop(item)
                         } else {
-                            this.ul.querySelectorAll('li span.play').forEach(span => span.classList.remove('play'))
-                            event.target.classList.add('play')
+                            li.classList.add('play')
                             this.play(item)
                         }
                     }
