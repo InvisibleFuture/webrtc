@@ -21,3 +21,14 @@ export function ListItem({ innerText, onclick, id, children = [], dataset, class
     children.forEach(child => li.appendChild(child))
     return li
 }
+
+export function Text({ innerText, onclick, id, children = [], dataset, classList=[] }) {
+    const span = document.createElement('span')
+    classList.forEach(item => span.classList.add(item))
+    span.innerText = innerText
+    span.onclick = onclick
+    span.id = id
+    dataset && Object.keys(dataset).forEach(key => span.dataset[key] = dataset[key])
+    children.forEach(child => span.appendChild(child))
+    return span
+}
