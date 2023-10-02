@@ -63,12 +63,10 @@ export default class ClientList {
                         }
                     }
                     webrtc.oniceconnectionstatechange = async event => {
-                        console.log('WebRTC ICE 连接状态更改:', webrtc.iceConnectionState, event)
                         if (webrtc.iceConnectionState === 'disconnected') {
-                            console.log('WebRTC ICE connection disconnected')
-                            // 如果用户没有离线, 则尝试重连
+                            console.log(data.name, 'WebRTC ICE 连接断开 disconnected')
                             if (this.clientlist.find(x => x.id === data.id)) {
-                                console.log('用户仍在线, 尝试重连...')
+                                console.log(data.name, '仍在线, 尝试重连...')
                                 const offer = await webrtc.createOffer()
                                 await webrtc.setLocalDescription(offer)
                                 websocket.send(JSON.stringify({ type: 'offer', id: data.id, offer }))
