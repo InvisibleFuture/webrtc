@@ -16,6 +16,19 @@
         import MusicList from './music.js'
         import ClientList from './client.js'
 
+        // 缓冲分片发送
+        const CHUNK_SIZE = 1024 * 64  // 每个块的大小为128KB
+        const THRESHOLD = 1024 * 1024 // 缓冲区的阈值为1MB
+        const DELAY = 100             // 延迟500ms
+
+        // 将两个ArrayBuffer合并成一个
+        function appendBuffer(buffer1, buffer2) {
+            const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength)
+            tmp.set(new Uint8Array(buffer1), 0)
+            tmp.set(new Uint8Array(buffer2), buffer1.byteLength)
+            return tmp.buffer
+        }
+
         // 读取本地音乐列表(本地缓存)
         const database = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         await database.open()
@@ -25,7 +38,26 @@
         const name = localStorage.getItem('username') ?? '游客'
 
         // 初始化客户端列表
-        const clientList = new ClientList({ name })
+        const clientList = new ClientList({
+            name,
+            onexit: async client => {
+                console.log(client.name, '离开频道', client)
+                // 从列表中移除未缓存的此用户的音乐, 但可能多人都有此音乐且未缓存
+                // 因此每条音乐都要检查是否有其他用户也有此音乐, 如果有则不移除
+                //musicList.list.filter(item => !item.arrayBuffer).forEach(item => {
+                //    const client = clientList.clientlist.find(client => {
+                //        return client.musicList.find(x => x.id === item.id)
+                //    })
+                //    if (!client) {
+                //        console.log('没有用户存留此音乐了, 移除记录', item.name)
+                //        musicList.remove(item)
+                //    } else {
+                //        console.log(client.name, '中还有此音乐, 保留记录', item.name)
+                //    }
+                //})
+
+            }
+        })
 
         // 初始化音乐列表(加入本地缓存)
         const musicList = new MusicList({
@@ -105,18 +137,6 @@
             }
         })
 
-        // 缓冲分片发送
-        const CHUNK_SIZE = 1024 * 128 // 每个块的大小为128KB
-        const THRESHOLD = 1024 * 1024 // 缓冲区的阈值为1MB
-        const DELAY = 100             // 延迟500ms
-
-        // 将两个ArrayBuffer合并成一个
-        function appendBuffer(buffer1, buffer2) {
-            const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength)
-            tmp.set(new Uint8Array(buffer1), 0)
-            tmp.set(new Uint8Array(buffer2), buffer1.byteLength)
-            return tmp.buffer
-        }
         // 只有一个基本信道, 用于交换和调度信息
         clientList.setChannel('base', {
             onopen: async event => {
@@ -139,7 +159,7 @@
                     console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
                     console.log('将列表保存到本机记录:', client)
                     client.musicList = list
-                    list.forEach(item => musicList.add(item))
+                    client.musicList.forEach(music => musicList.add(music))
                     return
                 }
                 if (type === 'get_music_data') {

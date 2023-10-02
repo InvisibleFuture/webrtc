@@ -1,7 +1,8 @@
 import { List, ListItem } from './weigets.js'
 
 export default class ClientList {
-    constructor({ channels = {}, EventListeners = {}, name: username }) {
+    constructor({ channels = {}, EventListeners = {}, name: username, onexit }) {
+        this.event = { onexit }
         this.channels = channels
         this.EventListeners = EventListeners
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
@@ -87,7 +88,7 @@ export default class ClientList {
                 }
                 if (data.type === 'pull') {
                     //console.log('移除客户端:', data)
-                    return this.remove(data)
+                    return this.exit(data)
                 }
                 if (data.type === 'offer') {
                     //console.log('收到对方 offer', data)
@@ -125,6 +126,13 @@ export default class ClientList {
         }
         this.websocket = linkStart()
     }
+    exit(item) {
+        const client = this.clientlist.find(client => client.id === item.id)
+        if (!client) return console.log('目标用户本不存在')
+        this.clientlist = this.clientlist.filter(client => client.id !== item.id)
+        this.ul.removeChild(document.getElementById(item.id))
+        this.event.onexit(client)
+    }
     setChannel(name, option) {
         this.channels[name] = option
     }
@@ -136,10 +144,6 @@ export default class ClientList {
             },
             chidren: []
         }))
-    }
-    remove(item) {
-        this.clientlist = this.clientlist.filter(client => client.id !== item.id)
-        this.ul.removeChild(document.getElementById(item.id))
     }
     // 添加回调函数
     on(name, callback) {
