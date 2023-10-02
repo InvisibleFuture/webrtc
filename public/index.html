@@ -17,9 +17,9 @@
         import ClientList from './client.js'
 
         // 缓冲分片发送
-        const CHUNK_SIZE = 1024 * 64  // 每个块的大小为128KB
-        const THRESHOLD = 1024 * 1024 // 缓冲区的阈值为1MB
-        const DELAY = 100             // 延迟500ms
+        const CHUNK_SIZE = 1024 * 64  // 默认每个块的大小为128KB
+        const THRESHOLD = 1024 * 1024 // 默认缓冲区的阈值为1MB
+        const DELAY = 50              // 默认延迟500ms
 
         // 将两个ArrayBuffer合并成一个
         function appendBuffer(buffer1, buffer2) {
