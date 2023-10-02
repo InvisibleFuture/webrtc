@@ -1,4 +1,4 @@
-export function createElement({ innerText, textContent, onclick, children = [], dataset, classList = [], ...attributes }, tagName) {
+export function createElement({ innerText, textContent, onclick, children = [], dataset, classList = [], ...attributes }, tagName = 'div') {
     const element = document.createElement(tagName)
     for (const key in attributes) {
         element.setAttribute(key, attributes[key])
