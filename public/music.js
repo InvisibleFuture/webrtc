@@ -110,10 +110,10 @@ export default class MusicList {
                     }
                 }),
                 Button({
-                    textContent: item.arrayBuffer ? '移除' : '缓存',
+                    textContent: item.save ? '移除' : '缓存',
                     onclick: event => {
                         event.stopPropagation()
-                        if (item.arrayBuffer) {
+                        if (item.save) {
                             event.target.textContent = '缓存'
                             this.unlike(item)
                         } else {
@@ -137,7 +137,7 @@ export default class MusicList {
         await this.event.onload(item)
     }
     async play(item) {
-        if (!item.arrayBuffer) {
+        if (!item.save) {
             // 边加载边播放
             const mediaSource = new MediaSource()
             this.audio.src = URL.createObjectURL(mediaSource)

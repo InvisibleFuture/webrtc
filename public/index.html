@@ -29,10 +29,12 @@
             return tmp.buffer
         }
 
-        // 读取本地音乐列表(本地缓存)
+        // 读取本地音乐列表并标识为缓存状态(本地缓存)
         const database = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
         await database.open()
-        const list = await database.getAll()
+        const list = (await database.getAll()).map(item => {
+            return { save: true, ...item }
+        })
 
         // 读取本地用户名(本地缓存)
         const name = localStorage.getItem('username') ?? '游客'
@@ -70,7 +72,7 @@
             onlike: (item, list) => {
                 console.log('喜欢音乐', item.name)
                 if (item.arrayBuffer) {
-                    database.add(item)
+                    database.add({ save:true, ...item })
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
                         list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
