@@ -167,7 +167,6 @@
         // 只有一个基本信道, 用于交换和调度信息
         clientList.setChannel('base', {
             onopen: async event => {
-                console.group('')
                 console.log('打开信道', event.target.label)
                 // 要求对方发送音乐列表
                 clientList.send('base', JSON.stringify({ type: 'get_music_list' }))
@@ -220,11 +219,9 @@
                 console.log('未知类型:', type)
             },
             onclose: event => {
-                console.groupEnd('')
                 console.log('关闭信道', event.target.label)
             },
             onerror: error => {
-                console.groupEnd('')
                 console.log('信道错误', error)
             }
         })
