@@ -157,9 +157,9 @@ export default class MusicList {
         this.event.onplay(item)
     }
     async stop() {
-        //if (!this.audio.paused) {
-        //    this.audio.pause()
-        //}
+        if (this.audio.paused) {
+            return console.error('暂停播放:音乐播放器不是播放状态!')
+        }
         this.audio.pause()
         this.audio.src = ''
         this.event.onstop(this.playing)
