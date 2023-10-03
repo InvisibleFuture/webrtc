@@ -115,8 +115,10 @@ export default class MusicList {
                         event.stopPropagation()
                         if (item.save) {
                             event.target.textContent = '缓存'
+                            this.ul.querySelector(`#${item.id}`).classList.remove('cache')
                             this.unlike(item)
                         } else {
+                            item.save = true
                             event.target.textContent = '移除'
                             this.ul.querySelector(`#${item.id}`).classList.add('cache')
                             this.like(item)
@@ -170,7 +172,6 @@ export default class MusicList {
         this.event.onlike(item, this.list)
     }
     async unlike(item) {
-        this.remove(item)
         this.event.onunlike(item, this.list)
     }
     async ban(item) {

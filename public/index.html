@@ -72,7 +72,7 @@
             onlike: (item, list) => {
                 console.log('喜欢音乐', item.name)
                 if (item.arrayBuffer) {
-                    database.add({ save:true, ...item })
+                    database.add(item)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
                         list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
