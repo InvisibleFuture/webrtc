@@ -116,7 +116,7 @@ export default class ClientList {
                     //console.log('取得在线对端列表:', data)
                     const { webrtc, channels } = await webrtc_init()
                     //console.log('发送给对方 offer')
-                    const offer = await webrtc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
+                    const offer = await webrtc.createOffer()
                     await webrtc.setLocalDescription(offer)
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
                     websocket.send(JSON.stringify({ type: 'offer', id: data.id, offer }))
