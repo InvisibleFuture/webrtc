@@ -3,7 +3,7 @@ export function createElement({ innerText, textContent, onclick, children = [], 
     for (const key in attributes) {
         element.setAttribute(key, attributes[key])
     }
-    element.classList.add(...classList)
+    if (classList.length) element.classList.add(...classList)
     if (innerText) element.innerText = innerText
     if (textContent) element.textContent = textContent
     if (onclick) element.onclick = onclick
