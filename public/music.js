@@ -39,6 +39,10 @@ export default class MusicList {
         // 写入 css 样式到 head
         const style = document.createElement('style')
         style.innerText = `
+            ul.music-list {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
             ul.music-list > li > span {
                 cursor: pointer;
             }
@@ -66,7 +70,7 @@ export default class MusicList {
             ul.music-list > li > button:hover {
                 background-color: #ccc;
             }
-            `
+        `
         document.head.appendChild(style)
         document.body.appendChild(input)
     }
