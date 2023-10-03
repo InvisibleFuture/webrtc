@@ -134,14 +134,26 @@ export default class MusicList {
     }
     async play(item) {
         if (!item.arrayBuffer) {
-            await this.load(item)
+            // 边加载边播放
+            const mediaSource = new MediaSource()
+            this.audio.src = URL.createObjectURL(mediaSource)
+            mediaSource.addEventListener('sourceopen', async () => {
+                const sourceBuffer = mediaSource.addSourceBuffer(item.type)
+                this.event.onload(item, sourceBuffer)
+                this.audio.play()
+            })
+        } else {
+            // 本地缓存直接播放
+            this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
+            this.audio.play()
         }
         this.playing = item
-        this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
-        this.audio.play()
         this.event.onplay(item)
     }
     async stop() {
+        //if (!this.audio.paused) {
+        //    this.audio.pause()
+        //}
         this.audio.pause()
         this.audio.src = ''
         this.event.onstop(this.playing)
