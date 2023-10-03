@@ -196,7 +196,7 @@
                     musicList.list.filter(item => item.id === id).forEach(item => {
                         const ch = client.webrtc.createDataChannel(channel, { reliable: true })
                         ch.onopen = async event => {
-                            console.log(client.name, `打开 ${channel} 信道, 传输音乐数据`)
+                            console.log(client.name, `打开 ${channel} 信道传输音乐数据`, item.name)
                             // 将音乐数据分成多个小块，并逐个发送
                             async function sendChunk(dataChannel, data, index = 0, buffer = new ArrayBuffer(0)) {
                                 while (index < data.byteLength) {
@@ -211,7 +211,7 @@
                                 return buffer
                             }
                             await sendChunk(ch, item.arrayBuffer)
-                            console.log(`发送 ${channel} 信道数据结束`)
+                            console.log(client.name, `获取 ${channel} 信道数据结束`, item.name)
                             ch.close() // 关闭信道
                         }
                     })
