@@ -1,4 +1,4 @@
-import { List, ListItem, Avatar, Span } from './weigets.js'
+import { List, ListItem, Avatar, Span, Dialog } from './weigets.js'
 
 export default class ClientList {
     constructor({ channels = {}, EventListeners = {}, name: username, onexit }) {
@@ -228,6 +228,9 @@ export default class ClientList {
                     src: item.avatar ?? '/favicon.ico',
                     onclick: event => {
                         event.stopPropagation()
+                        // 点击插入一个弹出层
+                        const dialog = Dialog({})
+                        document.body.appendChild(dialog)
                     }
                 }),
                 Span({
