@@ -59,11 +59,11 @@ export default class ClientList {
                         bundlePolicy: 'balanced',  // 每種類型的內容建立一個單獨的傳輸
                     })
                     webrtc.ondatachannel = ({ channel }) => {
-                        console.log(data.name, '建立', channel.label, '数据通道')
+                        console.debug(data.name, '建立', channel.label, '数据通道')
                         const client = this.clientlist.find(x => x.id === data.id)
                         const option = this.channels[channel.label]
                         channel.onopen = event => {
-                            console.log('对方打开', channel.label, '数据通道')
+                            console.debug('对方打开', channel.label, '数据通道')
                             if (option && option.onopen) {
                                 option.onopen(event, client)
                             }
@@ -75,13 +75,13 @@ export default class ClientList {
                             }
                         }
                         channel.onclose = event => {
-                            console.log('对方关闭', channel.label, '数据通道')
+                            console.debug('对方关闭', channel.label, '数据通道')
                             if (option && option.onclose) {
                                 option.onclose(event, client)
                             }
                         }
                         channel.onerror = event => {
-                            console.log(data.name, '通道', channel.label, '发生错误')
+                            console.error(data.name, '通道', channel.label, '发生错误')
                             if (option && option.onerror) {
                                 option.onerror(event, client)
                             }
@@ -100,10 +100,10 @@ export default class ClientList {
                     webrtc.getTransceivers
                     webrtc.oniceconnectionstatechange = async event => {
                         if (webrtc.iceConnectionState === 'disconnected' || webrtc.iceConnectionState === 'failed') {
-                            console.log(data.name, '需要添加新的 candidate')
+                            console.error(data.name, '需要添加新的 candidate')
                             // 添加新的 candidate
                         } else if (webrtc.iceConnectionState === 'connected' || webrtc.iceConnectionState === 'completed') {
-                            console.log(data.name, 'WebRTC 连接已经建立成功')
+                            console.debug(data.name, 'WebRTC 连接已经建立成功')
                         }
                     }
                     const channels = Object.entries(this.channels).map(([name, callback]) => {
@@ -302,7 +302,11 @@ export default class ClientList {
     sendto(id, name, data) {
         const client = this.clientlist.find(client => client.id === id)
         if (!client) {
-            console.log('客户端不存在:', id)
+            console.error('客户端不存在:', id)
+            return
+        }
+        if (!client.channels.find(ch => ch.label === name)) {
+            console.error('通道不存在:', name)
             return
         }
         client.channels.filter(ch => ch.label === name).forEach(async ch => {

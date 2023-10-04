@@ -1,9 +1,14 @@
 # webRTC
 webrtc 实现的 p2p 信道
 
+rtc rtc rtc
+channel channel channel channel
+part-server
+
+
 - [x] P2P通信
   - [ ] 分离出主要功能, 作为库或桁架使用
-  - [ ] 静态资源服务模式
+  - [ ] 静态资源服务模式(音乐,图像,视频,文本,各种,即时聊天)
   - [ ] 集群分发
 - [x] 音乐播放
   - [x] 请求到单个目标防止接收到重复分片数据

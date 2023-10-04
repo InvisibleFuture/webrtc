@@ -156,11 +156,12 @@
                 const data = JSON.parse(event.data)
                 if (data.type === 'get_user_profile') {
                     console.log(client.name, '请求身份信息:', data)
-                    //clientList.sendto(client.id, 'base', JSON.stringify({
-                    //    type: 'set_user_profile',
-                    //    name: name,
-                    //    avatar: avatar,
-                    //}))
+                    // 包过大会导致发送失败, 因此需要分开发送
+                    clientList.sendto(client.id, 'base', JSON.stringify({
+                        type: 'set_user_profile',
+                        name: name,
+                        avatar: avatar,
+                    }))
                     return
                 }
                 if (data.type === 'set_user_profile') {
