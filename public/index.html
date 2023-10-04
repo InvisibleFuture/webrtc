@@ -91,27 +91,27 @@
                 }
             },
             onban: item => {
-                console.log('禁止音乐', item.name)
+                console.info('禁止音乐', item.name)
             },
             onunban: item => {
-                console.log('解禁音乐', item.name)
+                console.info('解禁音乐', item.name)
             },
             onremove: item => {
-                console.log('移除音乐', item.name)
+                console.info('移除音乐', item.name)
                 database.delete(item.id)
             },
             onadd: (item, list) => {
-                console.log('添加音乐', item.name)
+                console.info('添加音乐', item.name)
             },
             onupdate: item => {
-                console.log('更新音乐', item.name)
+                console.info('更新音乐', item.name)
                 database.put(item)
             },
             onerror: error => {
-                console.log('音乐列表错误', error)
+                console.error('音乐列表错误', error)
             },
             onload: async item => {
-                console.log('加载音乐', item)
+                console.info('加载音乐', item)
                 return await new Promise((resolve) => {
                     var buffer = new ArrayBuffer(0) // 接收音乐数据
                     var count = 0                   // 接收分片计数
@@ -133,7 +133,7 @@
                     const client = clientList.clientlist.find(client => {
                         return client.musicList.find(x => x.id === item.id)
                     })
-                    console.log('向', client.name, '请求音乐数据')
+                    console.info('向', client.name, '请求音乐数据')
 
                     const c = Math.ceil(item.size / CHUNK_SIZE)
                     console.log('需要接收', c, '个分片')
@@ -148,11 +148,9 @@
         // 只有一个基本信道, 用于交换和调度信息
         clientList.setChannel('base', {
             onopen: async event => {
-                console.log('打开信道', event.target.label)
-                // 要求对方发送音乐列表
-                clientList.send('base', JSON.stringify({ type: 'get_music_list' }))
-                // 要求对方发送身份信息
-                clientList.send('base', JSON.stringify({ type: 'get_user_profile' }))
+                console.debug('打开信道', event.target.label, '广播请求音乐列表和身份信息')
+                clientList.send('base', JSON.stringify({ type: 'get_music_list' }))   // 要求对方发送音乐列表
+                clientList.send('base', JSON.stringify({ type: 'get_user_profile' })) // 要求对方发送身份信息
             },
             onmessage: async (event, client) => {
                 const data = JSON.parse(event.data)
@@ -186,7 +184,6 @@
                 }
                 if (data.type === 'set_music_list') {
                     console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
-                    console.log('将列表保存到本机记录:', client)
                     client.musicList = data.list
                     client.musicList.forEach(music => musicList.add(music))
                     return
@@ -223,8 +220,8 @@
             onclose: event => {
                 console.log('关闭信道', event.target.label)
             },
-            onerror: error => {
-                console.log('信道错误', error)
+            onerror: event => {
+                console.error('信道错误', event.target.label, event.error)
             }
         })
 

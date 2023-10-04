@@ -113,9 +113,9 @@ export default class ClientList {
                     return { webrtc, channels }
                 }
                 if (data.type === 'list') {
-                    //console.log('取得在线对端列表:', data)
+                    console.debug('取得在线对端列表:', data)
                     const { webrtc, channels } = await webrtc_init()
-                    //console.log('发送给对方 offer')
+                    console.debug('发送给对方 offer')
                     const offer = await webrtc.createOffer()
                     await webrtc.setLocalDescription(offer)
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
@@ -124,18 +124,18 @@ export default class ClientList {
                     return
                 }
                 if (data.type === 'push') {
-                    //console.log('新上线客户端:', data)
+                    console.debug('新上线客户端:', data)
                     return this.add(data)
                 }
                 if (data.type === 'pull') {
-                    //console.log('移除客户端:', data)
+                    console.debug('移除客户端:', data)
                     return this.exit(data)
                 }
                 if (data.type === 'offer') {
-                    //console.log('收到对方 offer', data)
+                    console.debug('收到对方 offer', data)
                     const { webrtc, channels } = await webrtc_init()
                     this.clientlist.push({ id: data.id, name: data.name, webrtc, channels })
-                    //console.log('发送给对方 answer')
+                    console.debug('发送给对方 answer')
                     await webrtc.setRemoteDescription(data.offer)
                     const answer = await webrtc.createAnswer()
                     await webrtc.setLocalDescription(answer)
@@ -143,18 +143,18 @@ export default class ClientList {
                     return
                 }
                 if (data.type === 'answer') {
-                    //console.log('收到对方 answer', data)
+                    console.debug('收到对方 answer', data)
                     const webrtc = this.clientlist.find(client => client.id === data.id).webrtc
                     await webrtc.setRemoteDescription(data.answer)
                     return
                 }
                 if (data.type === 'candidate') {
-                    console.log(data.name, '发来 candidate 候选通道')
+                    console.debug(data.name, '发来 candidate 候选通道')
                     const webrtc = this.clientlist.find(client => client.id === data.id).webrtc
                     await webrtc.addIceCandidate(data.candidate)
                     return
                 }
-                console.log('收到未知数据:', data)
+                console.error('收到未知数据:', data)
             }
             websocket.onclose = async event => {
                 console.log('WebSocket 断线重连...')
@@ -210,13 +210,13 @@ export default class ClientList {
     }
     getAvatar(id) { }
     setAvatar(user) {
-        console.log('更新avatar', user)
+        console.info('更新avatar', user)
         document.getElementById(user.id).querySelector('img').src = user.avatar
         this.clientlist.find(client => client.id === user.id).avatar = user.avatar
     }
     exit(item) {
         const client = this.clientlist.find(client => client.id === item.id)
-        if (!client) return console.log('目标用户本不存在')
+        if (!client) return console.error('目标用户本不存在')
         this.clientlist = this.clientlist.filter(client => client.id !== item.id)
         this.element.removeChild(document.getElementById(item.id))
         this.event.onexit(client)
