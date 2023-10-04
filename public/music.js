@@ -145,7 +145,8 @@ export default class MusicList {
             this.audio.src = URL.createObjectURL(mediaSource)
             if (!item.arrayBufferChunks) item.arrayBufferChunks = []
             mediaSource.addEventListener('sourceopen', async () => {
-                const sourceBuffer = mediaSource.addSourceBuffer(item.type)
+                const type = item.type === 'audio/wav' ? 'audio/wav; codecs=1' : item.type
+                const sourceBuffer = mediaSource.addSourceBuffer(type)
                 const arrayBufferLoader = async (index = 0) => {
                     console.log('开始加载====================================')
                     // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
