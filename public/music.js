@@ -168,7 +168,7 @@ export default class MusicList {
                             continue
                         }
                         if (item.arrayBufferChunks.length <= index) { // 分片数量不足则等待
-                            await new Promise(resolve => setTimeout(resolve, 100))
+                            await new Promise(resolve => setTimeout(resolve, 200))
                             continue
                         }
                         console.log('播放器加载分片:', item.name, `${index+1}/${chunkNumber}`)
