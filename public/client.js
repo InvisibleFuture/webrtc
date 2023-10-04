@@ -1,4 +1,4 @@
-import { List, ListItem } from './weigets.js'
+import { List, ListItem, Avatar, Span } from './weigets.js'
 
 export default class ClientList {
     constructor({ channels = {}, EventListeners = {}, name: username, onexit }) {
@@ -8,8 +8,10 @@ export default class ClientList {
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
         const host = window.location.host
         this.clientlist = []
-        this.ul = List({})
-        document.body.appendChild(this.ul)
+        this.element = List({
+            classList: ['userlist'],
+        })
+        document.body.appendChild(this.element)
 
         // 连接 WebSocket
         const linkStart = () => {
@@ -164,24 +166,77 @@ export default class ClientList {
             return websocket
         }
         this.websocket = linkStart()
+
+        // 插入css样式
+        const style = document.createElement('style')
+        style.textContent = `
+            ul.userlist {
+                position: fixed;
+                top: 0;
+                right: 0;
+                display: flex;
+                flex-direction: wrap;
+                align-items: center;
+                list-style: none;
+                padding: 0 1rem;
+            }
+            ul.userlist li {
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 12px;
+                border-radius: 8px;
+            }
+            ul.userlist li:first-child {
+                color: #2e7d3c;
+            }
+            ul.userlist li:hover {
+                background-color: #eee;
+            }
+            ul.userlist > * {
+                margin: 0 8px;
+            }
+            ul.userlist li img {
+                width:  32px;
+                height: 32px;
+                border-radius: 50%;
+            }
+        `
+        document.head.appendChild(style)
+        // 也插入自己的信息
+        this.add({ id: 'self', name: username })
     }
     exit(item) {
         const client = this.clientlist.find(client => client.id === item.id)
         if (!client) return console.log('目标用户本不存在')
         this.clientlist = this.clientlist.filter(client => client.id !== item.id)
-        this.ul.removeChild(document.getElementById(item.id))
+        this.element.removeChild(document.getElementById(item.id))
         this.event.onexit(client)
     }
     setChannel(name, option) {
         this.channels[name] = option
     }
     add(item) {
-        this.ul.appendChild(ListItem({
+        console.log(item)
+        this.element.appendChild(ListItem({
             id: item.id,
-            innerText: item.name ?? item.id,
             onclick: event => {
             },
-            chidren: []
+            children: [
+                Avatar({
+                    src: item.avatar ?? '/favicon.ico',
+                    onclick: event => {
+                        event.stopPropagation()
+                    }
+                }),
+                Span({
+                    textContent: item.name ?? item.id,
+                    onclick: event => {
+                        event.stopPropagation()
+                    }
+                })
+            ]
         }))
     }
     // 添加回调函数
