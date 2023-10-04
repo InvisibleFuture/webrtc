@@ -140,49 +140,55 @@ export default class MusicList {
     }
     async play(item) {
         if (!item.arrayBuffer) {
-            // 边加载边播放
-            const mediaSource = new MediaSource()
-            this.audio.src = URL.createObjectURL(mediaSource)
-            if (!item.arrayBufferChunks) item.arrayBufferChunks = []
-            mediaSource.addEventListener('sourceopen', async () => {
-                const type = item.type === 'audio/wav' ? 'audio/wav; codecs=1' : item.type
-                const sourceBuffer = mediaSource.addSourceBuffer(type)
-                const arrayBufferLoader = async (index = 0) => {
-                    console.log('开始加载====================================')
-                    // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
-                    const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
-                    console.log({ index, chunkNumber, paused: this.audio.paused })
-                    while (index < chunkNumber && !this.audio.paused) {
-                        const 播放状态 = !this.audio.paused && this.playing === item
-                        const 加载状态 = item.arrayBufferChunks.length < chunkNumber
-                        const 结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
-                        const 缓冲时间 = 结束时间 - this.audio.currentTime
-                        if (!播放状态 && !加载状态) break                        // 播放停止且加载完毕则退出
-                        if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
-                        if (缓冲时间 > 60) {                                    // 缓冲超过60秒则等待30秒
-                            await new Promise(resolve => setTimeout(resolve, 30000))
-                            continue
-                        }
-                        if (sourceBuffer.updating) { // sourceBuffer正在更新则等待更新结束
-                            await new Promise(resolve => sourceBuffer.addEventListener('updateend', resolve))
-                            continue
-                        }
-                        if (item.arrayBufferChunks.length <= index) { // 分片数量不足则等待
-                            await new Promise(resolve => setTimeout(resolve, 200))
-                            continue
-                        }
-                        console.log('播放器加载分片:', item.name, `${index + 1}/${chunkNumber}`)
-                        const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
-                        sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
-                        index++
-                    }
-                    console.log('加载完毕====================================')
-                    item.arrayBufferChunks = null // 加载完毕释放分片内存
-                }
-                this.event.onload(item)
+            // 不支持流式加载wav和flac, 需要全部加载完毕才能播放
+            if (item.type === 'audio/wav' || item.type === 'audio/flac') {
+                await this.load(item)
+                this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
                 this.audio.play()
-                arrayBufferLoader()
-            })
+            } else {
+                // 边加载边播放
+                const mediaSource = new MediaSource()
+                this.audio.src = URL.createObjectURL(mediaSource)
+                if (!item.arrayBufferChunks) item.arrayBufferChunks = []
+                mediaSource.addEventListener('sourceopen', async () => {
+                    const sourceBuffer = mediaSource.addSourceBuffer(item.type)
+                    const arrayBufferLoader = async (index = 0) => {
+                        console.log('开始加载====================================')
+                        // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
+                        const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
+                        console.log({ index, chunkNumber, paused: this.audio.paused })
+                        while (index < chunkNumber && !this.audio.paused) {
+                            const 播放状态 = !this.audio.paused && this.playing === item
+                            const 加载状态 = item.arrayBufferChunks.length < chunkNumber
+                            const 结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
+                            const 缓冲时间 = 结束时间 - this.audio.currentTime
+                            if (!播放状态 && !加载状态) break                        // 播放停止且加载完毕则退出
+                            if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
+                            if (缓冲时间 > 60) {                                    // 缓冲超过60秒则等待30秒
+                                await new Promise(resolve => setTimeout(resolve, 30000))
+                                continue
+                            }
+                            if (sourceBuffer.updating) { // sourceBuffer正在更新则等待更新结束
+                                await new Promise(resolve => sourceBuffer.addEventListener('updateend', resolve))
+                                continue
+                            }
+                            if (item.arrayBufferChunks.length <= index) { // 分片数量不足则等待
+                                await new Promise(resolve => setTimeout(resolve, 200))
+                                continue
+                            }
+                            console.log('播放器加载分片:', item.name, `${index + 1}/${chunkNumber}`)
+                            const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
+                            sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
+                            index++
+                        }
+                        console.log('加载完毕====================================')
+                        item.arrayBufferChunks = null // 加载完毕释放分片内存
+                    }
+                    this.event.onload(item)
+                    this.audio.play()
+                    arrayBufferLoader()
+                })
+            }
         } else {
             // 本地缓存直接播放
             this.audio.src = URL.createObjectURL(new Blob([item.arrayBuffer], { type: item.type }))
