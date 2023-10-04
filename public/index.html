@@ -38,6 +38,7 @@
 
         // 读取本地用户名(本地缓存)
         const name = localStorage.getItem('username') ?? '游客'
+        const avatar = localStorage.getItem('avatar') ?? '/favicon.ico'
 
         // 初始化客户端列表
         const clientList = new ClientList({
@@ -46,7 +47,7 @@
                 console.log(client.name, '离开频道', client)
                 // 从列表中移除未缓存的此用户的音乐, 但可能多人都有此音乐且未缓存
                 // 因此每条音乐都要检查是否有其他用户也有此音乐, 如果有则不移除
-                const 此用户音乐 = client.musicList.map(item => item.id)
+                const 此用户音乐 = client.musicList?.map(item => item.id) || []
                 const 无数据音乐 = musicList.list.filter(item => !item.arrayBuffer).filter(item => {
                     return 此用户音乐.includes(item.id)
                 })
@@ -150,10 +151,31 @@
                 console.log('打开信道', event.target.label)
                 // 要求对方发送音乐列表
                 clientList.send('base', JSON.stringify({ type: 'get_music_list' }))
+                // 要求对方发送身份信息
+                clientList.send('base', JSON.stringify({ type: 'get_user_profile' }))
             },
             onmessage: async (event, client) => {
-                const { type, id, channel, list } = JSON.parse(event.data)
-                if (type === 'get_music_list') {
+                const data = JSON.parse(event.data)
+                if (data.type === 'get_user_profile') {
+                    console.log(client.name, '请求身份信息:', data)
+                    //clientList.sendto(client.id, 'base', JSON.stringify({
+                    //    type: 'set_user_profile',
+                    //    name: name,
+                    //    avatar: avatar,
+                    //}))
+                    return
+                }
+                if (data.type === 'set_user_profile') {
+                    console.log(client.name, '发来身份信息:', data)
+                    console.log('将身份信息保存到本机记录:', client)
+                    client.name = data.name
+                    client.avatar = data.avatar
+                    // 还需要更新组件的用户信息
+                    console.log('更新组件的用户信息:', data, client)
+                    clientList.setAvatar({ id:client.id, ...data })
+                    return
+                }
+                if (data.type === 'get_music_list') {
                     const ms = musicList.list.filter(item => item.arrayBuffer)
                     console.log(client.name, '请求音乐列表:', ms)
                     clientList.sendto(client.id, 'base', JSON.stringify({
@@ -162,20 +184,20 @@
                     }))
                     return
                 }
-                if (type === 'set_music_list') {
+                if (data.type === 'set_music_list') {
                     console.log(client.name, '发来音乐列表:', `x${JSON.parse(event.data).list.length}`)
                     console.log('将列表保存到本机记录:', client)
-                    client.musicList = list
+                    client.musicList = data.list
                     client.musicList.forEach(music => musicList.add(music))
                     return
                 }
-                if (type === 'get_music_data') {
+                if (data.type === 'get_music_data') {
                     // 建立一个信道, 用于传输音乐数据(接收方已经准备好摘要信息)
                     console.log(client.name, '建立一个信道, 用于传输音乐数据', musicList.list)
-                    musicList.list.filter(item => item.id === id).forEach(item => {
-                        const ch = client.webrtc.createDataChannel(channel, { reliable: true })
+                    musicList.list.filter(item => item.id === data.id).forEach(item => {
+                        const ch = client.webrtc.createDataChannel(data.channel, { reliable: true })
                         ch.onopen = async event => {
-                            console.log(client.name, `打开 ${channel} 信道传输音乐数据`, item.name)
+                            console.log(client.name, `打开 ${data.channel} 信道传输音乐数据`, item.name)
                             // 将音乐数据分成多个小块，并逐个发送
                             async function sendChunk(dataChannel, data, index = 0, buffer = new ArrayBuffer(0)) {
                                 while (index < data.byteLength) {
@@ -190,13 +212,13 @@
                                 return buffer
                             }
                             await sendChunk(ch, item.arrayBuffer)
-                            console.log(client.name, `获取 ${channel} 信道数据结束`, item.name)
+                            console.log(client.name, `获取 ${data.channel} 信道数据结束`, item.name)
                             ch.close() // 关闭信道
                         }
                     })
                     return
                 }
-                console.log('未知类型:', type)
+                console.log('未知类型:', data.type)
             },
             onclose: event => {
                 console.log('关闭信道', event.target.label)

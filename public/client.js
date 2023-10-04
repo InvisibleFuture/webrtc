@@ -208,6 +208,12 @@ export default class ClientList {
         const avatar = localStorage.getItem('avatar')
         this.add({ id: 'self', name: username, avatar })
     }
+    getAvatar(id) { }
+    setAvatar(user) {
+        console.log('更新avatar', user)
+        document.getElementById(user.id).querySelector('img').src = user.avatar
+        this.clientlist.find(client => client.id === user.id).avatar = user.avatar
+    }
     exit(item) {
         const client = this.clientlist.find(client => client.id === item.id)
         if (!client) return console.log('目标用户本不存在')
@@ -219,7 +225,6 @@ export default class ClientList {
         this.channels[name] = option
     }
     add(item) {
-        console.log(item)
         this.element.appendChild(ListItem({
             id: item.id,
             onclick: event => {
