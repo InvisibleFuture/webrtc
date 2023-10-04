@@ -158,14 +158,14 @@ export default class MusicList {
                     const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
                     console.log({ index, chunkNumber, paused: this.audio.paused })
                     while (index < chunkNumber && !this.audio.paused) {
-                        console.log('加载中------------------------------------', index)
+                        console.log('播放器加载分片:', item.name, `${index}/${chunkNumber}`)
                         const 播放状态 = !this.audio.paused && this.playing === item
                         const 加载状态 = item.arrayBufferChunks.length < chunkNumber
                         const 播放进度 = this.audio.currentTime / this.audio.duration
                         const 加载进度 = index / chunkNumber
                         const 结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
                         const 缓冲时间 = 结束时间 - this.audio.currentTime
-                        console.log({ 播放状态, 加载状态, 播放进度, 加载进度, 缓冲时间 })
+                        //console.log({ 播放状态, 加载状态, 播放进度, 加载进度, 缓冲时间 })
                         if (!播放状态 && !加载状态) break // 播放停止且加载完毕则退出
                         if (缓冲时间 > 60) await new Promise(resolve => setTimeout(resolve, 30000))           // 缓冲超过60秒则等待30秒
                         if (播放进度 - 加载进度 > 0.5) await new Promise(resolve => setTimeout(resolve, 1000)) // 播放进度超过加载进度0.5则等待1秒
@@ -175,9 +175,9 @@ export default class MusicList {
                             while (item.arrayBufferChunks.length <= index) {
                                 await new Promise(resolve => setTimeout(resolve, 100))
                             }
-                            const chunk = item.arrayBufferChunks[index] // 顺序取出一个arrayBuffer分片
-                            if (this.audio.paused) break                // 播放停止则退出
-                            sourceBuffer.appendBuffer(chunk)            // 添加到sourceBuffer
+                            const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
+                            if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
+                            sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
                             index++
                         }
                     }
