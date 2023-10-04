@@ -117,9 +117,9 @@
                     const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
                     clientList.setChannel(`music-data-${item.id}`, {
                         onmessage: async (event, client) => {
-                            console.log('收到音乐数据 chunk', `${count+1}/${chunkNumber}`, buffer.byteLength)
+                            console.log('收到音乐数据 chunk', `${count + 1}/${chunkNumber}`, buffer.byteLength)
                             buffer = appendBuffer(buffer, event.data) // 合并分片准备存储
-                            item.arrayBufferChunks.push(event.data)   // 保存分片给边下边播
+                            item.arrayBufferChunks?.push(event.data)  // 保存分片给边下边播
                             count++
                             if (buffer.byteLength >= item.size) {
                                 console.log('音乐数据接收完毕')

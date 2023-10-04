@@ -171,7 +171,7 @@ export default class MusicList {
                             await new Promise(resolve => setTimeout(resolve, 200))
                             continue
                         }
-                        console.log('播放器加载分片:', item.name, `${index+1}/${chunkNumber}`)
+                        console.log('播放器加载分片:', item.name, `${index + 1}/${chunkNumber}`)
                         const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
                         sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
                         index++
