@@ -1,12 +1,14 @@
-export function createElement({ innerText, textContent, onclick, children = [], dataset, classList = [], ...attributes }, tagName = 'div') {
+export function createElement({ innerText, textContent, onclick, onchange, children = [], dataset, style, classList = [], ...attributes }, tagName = 'div') {
     const element = document.createElement(tagName)
     for (const key in attributes) {
         element.setAttribute(key, attributes[key])
     }
+    if (style) Object.assign(element.style, style)
     if (classList.length) element.classList.add(...classList)
     if (innerText) element.innerText = innerText
     if (textContent) element.textContent = textContent
     if (onclick) element.onclick = onclick
+    if (onchange) element.onchange = onchange
     if (dataset) Object.keys(dataset).forEach(key => element.dataset[key] = dataset[key])
     if (children) children.forEach(child => element.appendChild(child))
     return element

@@ -205,7 +205,8 @@ export default class ClientList {
         `
         document.head.appendChild(style)
         // 也插入自己的信息
-        this.add({ id: 'self', name: username })
+        const avatar = localStorage.getItem('avatar')
+        this.add({ id: 'self', name: username, avatar })
     }
     exit(item) {
         const client = this.clientlist.find(client => client.id === item.id)
@@ -234,25 +235,39 @@ export default class ClientList {
                                 Avatar({
                                     src: item.avatar ?? '/favicon.ico',
                                     style: {
-                                        width: '100px',
-                                        height: '100px',
-                                        borderRadius: '50%',
+                                        width: '240px',
+                                        height: '240px',
+                                        borderRadius: '8px',
                                         margin: '0 auto',
-                                        display: 'block'
+                                        display: 'block',
+                                        cursor: 'pointer'
+                                    },
+                                    onclick: event => {
+                                        // 点击上传图片
+                                        console.log('点击上传图片')
+                                        const input = document.createElement('input')
+                                        input.type = 'file'
+                                        input.accept = 'image/*'
+                                        input.onchange = async event => {
+                                            const file = event.target.files[0]
+                                            const reader = new FileReader()
+                                            reader.readAsDataURL(file)
+                                            reader.onload = async event => {
+                                                const base64 = event.target.result
+                                                localStorage.setItem('avatar', base64)
+                                                window.location.reload() // 简单刷新页面
+                                            }
+                                        }
+                                        input.click()
                                     }
                                 }),
                                 Input({
                                     value: item.name ?? item.id,
                                     type: 'text',
+                                    placeholder: '请设置你的名字',
                                     onchange: event => {
-                                        console.log(event.target.value)
-                                    }
-                                }),
-                                Button({
-                                    textContent: '保存',
-                                    onclick: event => {
-                                        event.stopPropagation()
-                                        document.body.removeChild(event.target.parentNode.parentNode)
+                                        localStorage.setItem('username', event.target.value)
+                                        window.location.reload() // 简单刷新页面
                                     }
                                 })
                             ]
