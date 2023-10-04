@@ -120,10 +120,11 @@
                     // 指针达到音乐数据大小则结束加载
                     const mediaLoader = async () => {
                         while (bufferCursor !== item.size) {
-                            if (musicList.audio.paused && musicList.audio.src === '') {
-                                console.log('音乐数据加载中, 但是音频已经停止播放')
+                            if (musicList.audio.paused && musicList.audio.currentTime !== 0) {
+                                console.log('音乐暂停')
                                 break
                             }
+                            console.log('当前播放进度', musicList.audio.currentTime)
                             const 当前播放进度 = musicList.audio.currentTime
                             const 当前结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
                             const 剩余数据长度 = buffer.byteLength - bufferCursor
