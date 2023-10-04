@@ -139,14 +139,53 @@ export default class MusicList {
         await this.event.onload(item)
     }
     async play(item) {
-        if (!item.save) {
+        if (!item.arrayBuffer) {
             // 边加载边播放
             const mediaSource = new MediaSource()
             this.audio.src = URL.createObjectURL(mediaSource)
+            if (!item.arrayBufferChunks) item.arrayBufferChunks = []
             mediaSource.addEventListener('sourceopen', async () => {
                 const sourceBuffer = mediaSource.addSourceBuffer(item.type)
-                this.event.onload(item, sourceBuffer)
+                const arrayBufferLoader = async (index = 0) => {
+
+                    // 等待 item.arrayBufferChunks 不为空
+                    while (item.arrayBufferChunks.length === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 100))
+                    }
+
+                    console.log('开始加载====================================')
+                    // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
+                    const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
+                    console.log({ index, chunkNumber, paused: this.audio.paused })
+                    while (index < chunkNumber && !this.audio.paused) {
+                        console.log('加载中------------------------------------', index)
+                        const 播放状态 = !this.audio.paused && this.playing === item
+                        const 加载状态 = item.arrayBufferChunks.length < chunkNumber
+                        const 播放进度 = this.audio.currentTime / this.audio.duration
+                        const 加载进度 = index / chunkNumber
+                        const 结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
+                        const 缓冲时间 = 结束时间 - this.audio.currentTime
+                        console.log({ 播放状态, 加载状态, 播放进度, 加载进度, 缓冲时间 })
+                        if (!播放状态 && !加载状态) break // 播放停止且加载完毕则退出
+                        if (缓冲时间 > 60) await new Promise(resolve => setTimeout(resolve, 30000))           // 缓冲超过60秒则等待30秒
+                        if (播放进度 - 加载进度 > 0.5) await new Promise(resolve => setTimeout(resolve, 1000)) // 播放进度超过加载进度0.5则等待1秒
+                        if (sourceBuffer.updating) {
+                            await new Promise(resolve => sourceBuffer.addEventListener('updateend', resolve))
+                        } else {
+                            while (item.arrayBufferChunks.length <= index) {
+                                await new Promise(resolve => setTimeout(resolve, 100))
+                            }
+                            const chunk = item.arrayBufferChunks[index] // 顺序取出一个arrayBuffer分片
+                            sourceBuffer.appendBuffer(chunk)            // 添加到sourceBuffer
+                            index++
+                        }
+                    }
+                    console.log('加载完毕====================================')
+                    item.arrayBufferChunks = null // 加载完毕释放分片内存
+                }
+                this.event.onload(item)
                 this.audio.play()
+                arrayBufferLoader()
             })
         } else {
             // 本地缓存直接播放
