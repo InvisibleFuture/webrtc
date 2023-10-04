@@ -40,8 +40,8 @@ export function Avatar(options) {
 
 // 弹出窗口, 高斯模糊背景, 进入离开动画过渡
 export function Dialog(options) {
-    const element = createElement(options, 'div')
-    const content = createElement({ classList: ['content'] })
+    const element = createElement({}, 'div')
+    const content = createElement(options)
     element.style.cssText = `
         position: fixed;
         top: 0;

@@ -1,4 +1,4 @@
-import { List, ListItem, Avatar, Span, Dialog } from './weigets.js'
+import { List, ListItem, Avatar, Span, Dialog, Button, Input } from './weigets.js'
 
 export default class ClientList {
     constructor({ channels = {}, EventListeners = {}, name: username, onexit }) {
@@ -229,8 +229,34 @@ export default class ClientList {
                     onclick: event => {
                         event.stopPropagation()
                         // 点击插入一个弹出层
-                        const dialog = Dialog({})
-                        document.body.appendChild(dialog)
+                        document.body.appendChild(Dialog({
+                            children: [
+                                Avatar({
+                                    src: item.avatar ?? '/favicon.ico',
+                                    style: {
+                                        width: '100px',
+                                        height: '100px',
+                                        borderRadius: '50%',
+                                        margin: '0 auto',
+                                        display: 'block'
+                                    }
+                                }),
+                                Input({
+                                    value: item.name ?? item.id,
+                                    type: 'text',
+                                    onchange: event => {
+                                        console.log(event.target.value)
+                                    }
+                                }),
+                                Button({
+                                    textContent: '保存',
+                                    onclick: event => {
+                                        event.stopPropagation()
+                                        document.body.removeChild(event.target.parentNode.parentNode)
+                                    }
+                                })
+                            ]
+                        }))
                     }
                 }),
                 Span({
