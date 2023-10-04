@@ -148,10 +148,10 @@ export default class MusicList {
                 const sourceBuffer = mediaSource.addSourceBuffer(item.type)
                 const arrayBufferLoader = async (index = 0) => {
 
-                    // 等待 item.arrayBufferChunks 不为空
-                    while (item.arrayBufferChunks.length === 0) {
-                        await new Promise(resolve => setTimeout(resolve, 100))
-                    }
+                    //// 等待 item.arrayBufferChunks 不为空
+                    //while (item.arrayBufferChunks.length === 0) {
+                    //    await new Promise(resolve => setTimeout(resolve, 100))
+                    //}
 
                     console.log('开始加载====================================')
                     // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
@@ -174,6 +174,7 @@ export default class MusicList {
                         } else {
                             while (item.arrayBufferChunks.length <= index) {
                                 await new Promise(resolve => setTimeout(resolve, 100))
+                                if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
                             }
                             const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
                             if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
