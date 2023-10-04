@@ -176,6 +176,7 @@ export default class MusicList {
                                 await new Promise(resolve => setTimeout(resolve, 100))
                             }
                             const chunk = item.arrayBufferChunks[index] // 顺序取出一个arrayBuffer分片
+                            if (this.audio.paused) break                // 播放停止则退出
                             sourceBuffer.appendBuffer(chunk)            // 添加到sourceBuffer
                             index++
                         }
