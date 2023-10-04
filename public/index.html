@@ -114,9 +114,10 @@
                 return await new Promise((resolve) => {
                     var buffer = new ArrayBuffer(0) // 接收音乐数据
                     var count = 0                   // 接收分片计数
+                    const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
                     clientList.setChannel(`music-data-${item.id}`, {
                         onmessage: async (event, client) => {
-                            console.log('收到音乐数据 chunk', count, buffer.byteLength)
+                            console.log('收到音乐数据 chunk', `${count}/${chunkNumber}`, buffer.byteLength)
                             buffer = appendBuffer(buffer, event.data) // 合并分片准备存储
                             item.arrayBufferChunks.push(event.data)   // 保存分片给边下边播
                             count++
