@@ -161,26 +161,29 @@ export default class MusicList {
                         console.log('播放器加载分片:', item.name, `${index}/${chunkNumber}`)
                         const 播放状态 = !this.audio.paused && this.playing === item
                         const 加载状态 = item.arrayBufferChunks.length < chunkNumber
-                        const 播放进度 = this.audio.currentTime / this.audio.duration
-                        const 加载进度 = index / chunkNumber
+                        //const 播放进度 = this.audio.currentTime / this.audio.duration
+                        //const 加载进度 = index / chunkNumber
                         const 结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
                         const 缓冲时间 = 结束时间 - this.audio.currentTime
                         //console.log({ 播放状态, 加载状态, 播放进度, 加载进度, 缓冲时间 })
                         if (!播放状态 && !加载状态) break // 播放停止且加载完毕则退出
-                        if (缓冲时间 > 60) await new Promise(resolve => setTimeout(resolve, 30000))           // 缓冲超过60秒则等待30秒
-                        if (播放进度 - 加载进度 > 0.5) await new Promise(resolve => setTimeout(resolve, 1000)) // 播放进度超过加载进度0.5则等待1秒
-                        if (sourceBuffer.updating) {
-                            await new Promise(resolve => sourceBuffer.addEventListener('updateend', resolve))
-                        } else {
-                            while (item.arrayBufferChunks.length <= index) {
-                                await new Promise(resolve => setTimeout(resolve, 100))
-                                if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
-                            }
-                            const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
-                            if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
-                            sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
-                            index++
+                        //if (播放进度 - 加载进度 > 0.5) await new Promise(resolve => setTimeout(resolve, 1000)) // 播放进度超过加载进度0.5则等待1秒
+                        if (缓冲时间 > 60) { // 缓冲超过60秒则等待30秒
+                            await new Promise(resolve => setTimeout(resolve, 30000))
+                            continue
                         }
+                        if (sourceBuffer.updating) { // sourceBuffer正在更新则等待更新结束
+                            await new Promise(resolve => sourceBuffer.addEventListener('updateend', resolve))
+                            continue
+                        }
+                        if (item.arrayBufferChunks.length <= index) { // 分片数量不足则等待
+                            await new Promise(resolve => setTimeout(resolve, 100))
+                            continue
+                        }
+                        const chunk = item.arrayBufferChunks[index]           // 顺序取出一个arrayBuffer分片
+                        if (this.audio.paused || this.playing !== item) break // 播放停止或已经切歌则退出
+                        sourceBuffer.appendBuffer(chunk)                      // 添加到sourceBuffer
+                        index++
                     }
                     console.log('加载完毕====================================')
                     item.arrayBufferChunks = null // 加载完毕释放分片内存
