@@ -114,29 +114,6 @@
                 return await new Promise((resolve) => {
                     var buffer = new ArrayBuffer(0) // 接收音乐数据
                     var count = 0                   // 接收分片计数
-                    //var bufferCursor = 0            // 加载进度
-                    //var partlength = 1024 * 64      // 每次加载1MB
-                    //// 指针达到音乐数据大小则结束加载
-                    //const mediaLoader = async () => {
-                    //    while (bufferCursor !== item.size) {
-                    //        if (musicList.audio.paused && musicList.audio.currentTime !== 0) {
-                    //            console.log('音乐暂停')
-                    //            break
-                    //        }
-                    //        console.log('当前播放进度', musicList.audio.currentTime)
-                    //        const 当前播放进度 = musicList.audio.currentTime
-                    //        const 当前结束时间 = sourceBuffer.buffered.length && sourceBuffer.buffered.end(0)
-                    //        const 剩余数据长度 = buffer.byteLength - bufferCursor
-                    //        const 本次加载长度 = Math.min(partlength, 剩余数据长度)
-                    //        const 缓冲时间 = 当前结束时间 - 当前播放进度
-                    //        if (buffer.byteLength > bufferCursor && !sourceBuffer.updating && 缓冲时间 < 60) {
-                    //            sourceBuffer.appendBuffer(buffer.slice(bufferCursor, bufferCursor + 本次加载长度))
-                    //            bufferCursor += 本次加载长度
-                    //        }
-                    //        await new Promise((resolve) => setTimeout(resolve, 1000))
-                    //    }
-                    //}
-                    //mediaLoader()
                     clientList.setChannel(`music-data-${item.id}`, {
                         onmessage: async (event, client) => {
                             console.log('收到音乐数据 chunk', count, buffer.byteLength)

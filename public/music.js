@@ -147,7 +147,6 @@ export default class MusicList {
             mediaSource.addEventListener('sourceopen', async () => {
                 const sourceBuffer = mediaSource.addSourceBuffer(item.type)
                 const arrayBufferLoader = async (index = 0) => {
-
                     console.log('开始加载====================================')
                     // 按照数据长度计算出分片应有数量, 如果数量不到且没有停止加载则一直读取
                     const chunkNumber = Math.ceil(item.size / 1024 / 64) // 64KB每片
