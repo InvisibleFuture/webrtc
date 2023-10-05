@@ -44,6 +44,7 @@ export function Avatar(options) {
 export function Dialog(options) {
     const element = createElement({}, 'div')
     const content = createElement(options)
+    element.tabIndex = 0  // 使元素可以获得焦点
     element.style.cssText = `
         position: fixed;
         top: 0;
@@ -77,6 +78,24 @@ export function Dialog(options) {
             element.remove()
         }
     }
+    // 按下 ESC 关闭
+    element.onkeydown = async event => {
+        if (event.key === 'Escape') {
+            await element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100 }).finished
+            element.remove()
+        }
+    }
+    // 显示时自动聚焦
+    const observer = new MutationObserver((mutationsList) => {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                element.focus()
+                return
+            }
+        }
+    })
+    // 监听 Dialog 元素的插入
+    observer.observe(document.body, { childList: true, subtree: true })
     return element
 }
 
