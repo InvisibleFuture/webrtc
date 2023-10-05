@@ -62,11 +62,12 @@ export function Dialog(options) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 1em;
         background-color: #fff;
         border-radius: 150px;
         box-shadow: 0 0 1em #ccc;
         overflow: hidden;
+        display: flex;
+        justify-content: center;
     `
     element.appendChild(content)
     // 点击空白处关闭
