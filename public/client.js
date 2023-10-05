@@ -267,6 +267,17 @@ export default class ClientList {
                                     }
                                 }),
                                 Input({
+                                    style: {
+                                        width: '100px',
+                                        border: '2px dotted #bbb',
+                                        borderRadius: '50%',
+                                        outline: 'none',
+                                        padding: '5px 0',
+                                        textAlign: 'center',
+                                        position: 'absolute',
+                                        bottom: '-5px',
+                                        left: '85px',
+                                    },
                                     value: item.name ?? item.id,
                                     type: 'text',
                                     placeholder: '请设置你的名字',

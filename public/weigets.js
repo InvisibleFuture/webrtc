@@ -63,8 +63,9 @@ export function Dialog(options) {
         transform: translate(-50%, -50%);
         padding: 1em;
         background-color: #fff;
-        border-radius: 0.5em;
+        border-radius: 150px;
         box-shadow: 0 0 1em #ccc;
+        overflow: hidden;
     `
     element.appendChild(content)
     // 点击空白处关闭
