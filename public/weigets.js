@@ -94,8 +94,9 @@ export function Dialog(options) {
             }
         }
     })
-    // 监听 Dialog 元素的插入
+    // 监听 Dialog 元素的插入, 在 Dialog 被移除时停止监听
     observer.observe(document.body, { childList: true, subtree: true })
+    element.onremove = () => observer.disconnect()
     return element
 }
 
