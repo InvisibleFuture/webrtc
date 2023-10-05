@@ -55,8 +55,6 @@ export function Dialog(options) {
         backdrop-filter: blur(5px);
         duration: 0.5s;
         transition: all 0.5s;
-        opacity: 0;
-        animation: fadeIn 0.75s forwards;
     `
     content.classList.add('dialog')
     content.style.cssText = `
@@ -90,6 +88,7 @@ export function Dialog(options) {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 element.focus()
+                element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 100 }).finished
                 return
             }
         }
@@ -99,18 +98,3 @@ export function Dialog(options) {
     element.onremove = () => observer.disconnect()
     return element
 }
-
-const fadeIn = `
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-`
-// Add the CSS3 animation to the document's head
-const style = document.createElement('style')
-style.innerHTML = fadeIn
-document.head.appendChild(style)
