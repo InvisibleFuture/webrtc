@@ -54,6 +54,8 @@ export function Dialog(options) {
         backdrop-filter: blur(5px);
         duration: 0.5s;
         transition: all 0.5s;
+        opacity: 0;
+        animation: fadeIn 0.75s forwards;
     `
     content.classList.add('dialog')
     content.style.cssText = `
@@ -69,10 +71,26 @@ export function Dialog(options) {
     `
     element.appendChild(content)
     // 点击空白处关闭
-    element.onclick = event => {
+    element.onclick = async event => {
         if (event.target === element) {
+            await element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100 }).finished
             element.remove()
         }
     }
     return element
 }
+
+const fadeIn = `
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+`
+// Add the CSS3 animation to the document's head
+const style = document.createElement('style')
+style.innerHTML = fadeIn
+document.head.appendChild(style)
