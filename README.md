@@ -1,10 +1,15 @@
 # webRTC
 webrtc 实现的 p2p 信道
 
-rtc rtc rtc
-channel channel channel channel
-part-server
+rtc rtc rtc: 稳定, 多重连接
+channel channel channel: 细流
+part-server: 调谐, 从不同服务器请求资源分片
+webrtc://用户@域名:端口/信道标识/资源ID
 
+1. 每个节点都公开持有的资源列表, 和连接的节点列表
+2. 每当资源变动时告知所有连接的节点
+3. 与节点创建多个RTC时, 不发送多份, 以ID为准, id随机生成给不同机器, 无法通过ID锁定其它机器
+4. 通过WS交换信息时, ID是否固定? 向WS提供连接?
 
 - [x] P2P通信
   - [ ] 分离出主要功能, 作为库或桁架使用
