@@ -280,7 +280,7 @@ export default class ClientList {
                                     },
                                     value: item.name ?? item.id,
                                     type: 'text',
-                                    placeholder: '请设置你的名字',
+                                    placeholder: '请设置你的昵称',
                                     onchange: event => {
                                         localStorage.setItem('username', event.target.value)
                                         window.location.reload() // 简单刷新页面
