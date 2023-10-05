@@ -29,10 +29,14 @@
             return tmp.buffer
         }
 
+        // 读取本地图像
+        const imageStore = new IndexedDB('musicDatabase', 1, 'imageObjectStore')
+        await imageStore.open()
+
         // 读取本地音乐列表并标识为缓存状态(本地缓存)
-        const database = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
-        await database.open()
-        const list = (await database.getAll()).map(item => {
+        const musicStore = new IndexedDB('musicDatabase', 1, 'musicObjectStore')
+        await musicStore.open()
+        const list = (await musicStore.getAll()).map(item => {
             return { save: true, ...item }
         })
 
@@ -73,7 +77,7 @@
             onlike: (item, list) => {
                 console.log('喜欢音乐', item.name)
                 if (item.arrayBuffer) {
-                    database.add(item)
+                    musicStore.add(item)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
                         list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
@@ -83,7 +87,7 @@
             onunlike: (item, list) => {
                 console.log('取消喜欢', item.name)
                 if (item.arrayBuffer) {
-                    database.delete(item.id)
+                    musicStore.delete(item.id)
                     clientList.send('base', JSON.stringify({
                         type: 'set_music_list',
                         list: list.map(({ id, name, size, type }) => ({ id, name, size, type }))
@@ -98,14 +102,14 @@
             },
             onremove: item => {
                 console.info('移除音乐', item.name)
-                database.delete(item.id)
+                musicStore.delete(item.id)
             },
             onadd: (item, list) => {
                 console.info('添加音乐', item.name)
             },
             onupdate: item => {
                 console.info('更新音乐', item.name)
-                database.put(item)
+                musicStore.put(item)
             },
             onerror: error => {
                 console.error('音乐列表错误', error)
@@ -145,6 +149,8 @@
             }
         })
 
+        const ImageList = []
+
         // 只有一个基本信道, 用于交换和调度信息
         clientList.setChannel('base', {
             onopen: async event => {
@@ -173,6 +179,9 @@
                     console.log('更新组件的用户信息:', data, client)
                     clientList.setAvatar({ id:client.id, ...data })
                     return
+                }
+                if (data.type === 'get_image_list') {
+                    // webrtc://用户@域名:端口/信道标识/资源ID
                 }
                 if (data.type === 'get_music_list') {
                     const ms = musicList.list.filter(item => item.arrayBuffer)
