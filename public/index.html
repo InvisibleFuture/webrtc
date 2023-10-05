@@ -249,11 +249,16 @@
         }
         document.body.appendChild(nameInput)
 
+        // 设置标签为自己的头像
         if (localStorage.getItem('avatar')) {
             const favicon = document.createElement('link')
             favicon.rel = 'icon'
             favicon.href = localStorage.getItem('avatar')
             document.head.appendChild(favicon)
+        }
+        // 设置标题为自己的昵称
+        if (localStorage.getItem('username')) {
+            document.title = localStorage.getItem('username')
         }
     </script>
 </body>
